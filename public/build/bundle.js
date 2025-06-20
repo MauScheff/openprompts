@@ -10755,7 +10755,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (628:6) {#if selectedShape}
+    // (664:6) {#if selectedShape}
     function create_if_block$_1(ctx) {
     	let if_block$_anchor$;
 
@@ -10800,14 +10800,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(628:6) {#if selectedShape}",
+    		source: "(664:6) {#if selectedShape}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (639:8) {:else}
+    // (675:8) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -10830,14 +10830,14 @@ var app = (function () {
     	const block$ = {
     		c: function create() {
     			h3$ = element("h3");
-    			h3$.textContent = "Node";
+    			h3$.textContent = "Prompt";
     			t1$ = space();
     			label0$ = element("label");
     			t2$ = text("Name: ");
     			input0$ = element("input");
     			t3$ = space();
     			label1$ = element("label");
-    			t4$ = text("Command: ");
+    			t4$ = text("Prompt: ");
     			input1$ = element("input");
     			t5$ = space();
     			label2$ = element("label");
@@ -10848,23 +10848,23 @@ var app = (function () {
     			t9$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-jgyirj");
-    			add_location(h3$, file$, 639, 10, 25776);
+    			add_location(h3$, file$, 675, 10, 27117);
     			attr_dev(input0$, "class", "svelte-jgyirj");
-    			add_location(input0$, file$, 640, 23, 25813);
+    			add_location(input0$, file$, 676, 23, 27156);
     			attr_dev(label0$, "class", "svelte-jgyirj");
-    			add_location(label0$, file$, 640, 10, 25800);
+    			add_location(label0$, file$, 676, 10, 27143);
     			attr_dev(input1$, "class", "svelte-jgyirj");
-    			add_location(input1$, file$, 641, 26, 25889);
+    			add_location(input1$, file$, 677, 25, 27231);
     			attr_dev(label1$, "class", "svelte-jgyirj");
-    			add_location(label1$, file$, 641, 10, 25873);
+    			add_location(label1$, file$, 677, 10, 27216);
     			attr_dev(label2$, "class", "hint svelte-jgyirj");
-    			add_location(label2$, file$, 642, 10, 25952);
+    			add_location(label2$, file$, 678, 10, 27294);
     			attr_dev(label3$, "class", "svelte-jgyirj");
-    			add_location(label3$, file$, 643, 10, 26052);
+    			add_location(label3$, file$, 679, 10, 27394);
     			attr_dev(textarea$, "rows", "5");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-jgyirj");
-    			add_location(textarea$, file$, 644, 10, 26085);
+    			add_location(textarea$, file$, 680, 10, 27427);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -10930,14 +10930,14 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(639:8) {:else}",
+    		source: "(675:8) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (634:50) 
+    // (670:50) 
     function create_if_block$_3(ctx) {
     	let h3$;
     	let t1$;
@@ -10966,15 +10966,15 @@ var app = (function () {
     			t6$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-jgyirj");
-    			add_location(h3$, file$, 634, 10, 25561);
+    			add_location(h3$, file$, 670, 10, 26902);
     			attr_dev(label0$, "class", "svelte-jgyirj");
-    			add_location(label0$, file$, 635, 10, 25587);
+    			add_location(label0$, file$, 671, 10, 26928);
     			attr_dev(label1$, "class", "svelte-jgyirj");
-    			add_location(label1$, file$, 636, 10, 25639);
+    			add_location(label1$, file$, 672, 10, 26980);
     			attr_dev(textarea$, "rows", "5");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-jgyirj");
-    			add_location(textarea$, file$, 637, 10, 25672);
+    			add_location(textarea$, file$, 673, 10, 27013);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11017,14 +11017,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_3.name,
     		type: "if",
-    		source: "(634:50) ",
+    		source: "(670:50) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (629:8) {#if selectedShape.role === "input"}
+    // (665:8) {#if selectedShape.role === "input"}
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
@@ -11053,14 +11053,14 @@ var app = (function () {
     			t6$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-jgyirj");
-    			add_location(h3$, file$, 629, 10, 25323);
+    			add_location(h3$, file$, 665, 10, 26664);
     			attr_dev(label0$, "class", "svelte-jgyirj");
-    			add_location(label0$, file$, 630, 10, 25348);
+    			add_location(label0$, file$, 666, 10, 26689);
     			attr_dev(label1$, "class", "svelte-jgyirj");
-    			add_location(label1$, file$, 631, 10, 25400);
+    			add_location(label1$, file$, 667, 10, 26741);
     			attr_dev(textarea$, "rows", "5");
     			attr_dev(textarea$, "class", "svelte-jgyirj");
-    			add_location(textarea$, file$, 632, 10, 25432);
+    			add_location(textarea$, file$, 668, 10, 26773);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11103,14 +11103,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(629:8) {#if selectedShape.role === \\\"input\\\"}",
+    		source: "(665:8) {#if selectedShape.role === \\\"input\\\"}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (653:8) {#if label.name}
+    // (689:8) {#if label.name}
     function create_if_block$(ctx) {
     	let div$;
     	let t0$_value$ = /*label*/ ctx[21].name + "";
@@ -11125,7 +11125,7 @@ var app = (function () {
     			attr_dev(div$, "class", "node-label svelte-jgyirj");
     			set_style(div$, "left", /*label*/ ctx[21].x + "px");
     			set_style(div$, "top", /*label*/ ctx[21].y + "px");
-    			add_location(div$, file$, 653, 10, 26351);
+    			add_location(div$, file$, 689, 10, 27693);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
@@ -11152,14 +11152,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(653:8) {#if label.name}",
+    		source: "(689:8) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (652:6) {#each labels as label, i (i)}
+    // (688:6) {#each labels as label, i (i)}
     function create_each_block$(key$_1, ctx) {
     	let first$;
     	let if_block$_anchor$;
@@ -11206,7 +11206,7 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$.name,
     		type: "each",
-    		source: "(652:6) {#each labels as label, i (i)}",
+    		source: "(688:6) {#each labels as label, i (i)}",
     		ctx
     	});
 
@@ -11263,7 +11263,7 @@ var app = (function () {
     			t2$ = space();
     			div2$ = element("div");
     			button0$ = element("button");
-    			button0$.textContent = "Add Circle";
+    			button0$.textContent = "Add Prompt";
     			t4$ = space();
     			button1$ = element("button");
     			t5$ = text("Play");
@@ -11271,23 +11271,23 @@ var app = (function () {
     			button2$ = element("button");
     			t7$ = text("Stop");
     			attr_dev(div0$, "class", "info-panel svelte-jgyirj");
-    			add_location(div0$, file$, 626, 4, 25217);
+    			add_location(div0$, file$, 662, 4, 26558);
     			attr_dev(canvas$, "class", "svelte-jgyirj");
-    			add_location(canvas$, file$, 650, 6, 26242);
+    			add_location(canvas$, file$, 686, 6, 27584);
     			attr_dev(div1$, "class", "canvas-container svelte-jgyirj");
-    			add_location(div1$, file$, 649, 4, 26205);
+    			add_location(div1$, file$, 685, 4, 27547);
     			attr_dev(button0$, "class", "svelte-jgyirj");
-    			add_location(button0$, file$, 661, 6, 26536);
+    			add_location(button0$, file$, 697, 6, 27878);
     			button1$.disabled = /*isRunning*/ ctx[3];
     			attr_dev(button1$, "class", "svelte-jgyirj");
-    			add_location(button1$, file$, 662, 6, 26591);
+    			add_location(button1$, file$, 698, 6, 27933);
     			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[3];
     			attr_dev(button2$, "class", "svelte-jgyirj");
-    			add_location(button2$, file$, 663, 6, 26664);
+    			add_location(button2$, file$, 699, 6, 28006);
     			attr_dev(div2$, "class", "controls svelte-jgyirj");
-    			add_location(div2$, file$, 660, 4, 26507);
+    			add_location(div2$, file$, 696, 4, 27849);
     			attr_dev(div3$, "class", "app-wrap svelte-jgyirj");
-    			add_location(div3$, file$, 625, 2, 25190);
+    			add_location(div3$, file$, 661, 2, 26531);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11462,18 +11462,63 @@ var app = (function () {
     	let labels = [];
 
     	function addCircle() {
-    		scene.push({
+    		// Determine previous node: last prompt or input if first
+    		const prompts = scene.filter(s => s.type === "circle" && s.role === "default");
+
+    		const prev = prompts.length > 0
+    		? prompts[prompts.length - 1]
+    		: scene.find(s => s.role === "input");
+
+    		// Assign a sequential name
+    		const index = prompts.length + 1;
+
+    		const newNode = {
     			type: "circle",
     			role: "default",
-    			name: "",
-    			command: "",
+    			name: `Prompt ${index}`,
+    			// Default command echoes input
+    			command: "echo {input}",
     			center: [Math.random() * 1.8 - 0.9, Math.random() * 1.8 - 0.9],
     			radius: 0.1,
     			color: defaultNodeColor,
     			selected: false,
     			highlight: false,
     			outputText: ""
-    		});
+    		};
+
+    		scene.push(newNode);
+
+    		// Automatically connect from previous node
+    		if (prev) {
+    			scene.push({
+    				type: "edge",
+    				from: prev,
+    				to: newNode,
+    				color: [1, 1, 1, 1],
+    				selected: false
+    			});
+    		}
+
+    		// Remove any existing edge to output, then connect new prompt to output
+    		const outputNode = scene.find(s => s.role === "output");
+
+    		for (let i = scene.length - 1; i >= 0; i--) {
+    			const s = scene[i];
+
+    			if (s.type === "edge" && s.to === outputNode) {
+    				scene.splice(i, 1);
+    			}
+    		}
+
+    		if (outputNode) {
+    			scene.push({
+    				type: "edge",
+    				from: newNode,
+    				to: outputNode,
+    				color: [1, 1, 1, 1],
+    				selected: false
+    			});
+    		}
 
     		// Trigger reactivity for scene change
     		$$invalidate(7, scene = [...scene]);

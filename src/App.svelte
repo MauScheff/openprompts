@@ -40,18 +40,54 @@
     let labels = [];
 
     function addCircle() {
-        scene.push({
+        // Determine previous node: last prompt or input if first
+        const prompts = scene.filter(s => s.type === "circle" && s.role === "default");
+        const prev = prompts.length > 0
+            ? prompts[prompts.length - 1]
+            : scene.find(s => s.role === "input");
+        // Assign a sequential name
+        const index = prompts.length + 1;
+        const newNode = {
             type: "circle",
             role: "default",
-            name: "",
-            command: "",
+            name: `Prompt ${index}`,
+            // Default command echoes input
+            command: "echo {input}",
             center: [Math.random() * 1.8 - 0.9, Math.random() * 1.8 - 0.9],
             radius: 0.1,
             color: defaultNodeColor,
             selected: false,
             highlight: false,
             outputText: "",
-        });
+        };
+        scene.push(newNode);
+        // Automatically connect from previous node
+        if (prev) {
+            scene.push({
+                type: "edge",
+                from: prev,
+                to: newNode,
+                color: [1, 1, 1, 1],
+                selected: false,
+            });
+        }
+        // Remove any existing edge to output, then connect new prompt to output
+        const outputNode = scene.find(s => s.role === "output");
+        for (let i = scene.length - 1; i >= 0; i--) {
+            const s = scene[i];
+            if (s.type === "edge" && s.to === outputNode) {
+                scene.splice(i, 1);
+            }
+        }
+        if (outputNode) {
+            scene.push({
+                type: "edge",
+                from: newNode,
+                to: outputNode,
+                color: [1, 1, 1, 1],
+                selected: false,
+            });
+        }
         // Trigger reactivity for scene change
         scene = [...scene];
     }
@@ -637,9 +673,9 @@
           <label>Output:</label>
           <textarea rows="5" readonly bind:value={selectedShape.outputText}></textarea>
         {:else}
-          <h3>Node</h3>
+          <h3>Prompt</h3>
           <label>Name: <input bind:value={selectedShape.name} /></label>
-          <label>Command: <input bind:value={selectedShape.command} /></label>
+          <label>Prompt: <input bind:value={selectedShape.command} /></label>
           <label class="hint">Use &#123;input&#125; to reference the previous node's output</label>
           <label>Output:</label>
           <textarea rows="5" readonly bind:value={selectedShape.outputText}></textarea>
@@ -659,7 +695,7 @@
     </div>
 
     <div class="controls">
-      <button on:click={addCircle}>Add Circle</button>
+      <button on:click={addCircle}>Add Prompt</button>
       <button on:click={playPipeline} disabled={isRunning}>Play</button>
       <button on:click={stopPipeline} disabled={!isRunning}>Stop</button>
     </div>

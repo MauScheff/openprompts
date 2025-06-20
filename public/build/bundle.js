@@ -33,6 +33,9 @@ var app = (function () {
         : typeof globalThis !== 'undefined'
             ? globalThis
             : global);
+    function append(target, node) {
+        target.appendChild(node);
+    }
     function insert(target, node, anchor) {
         target.insertBefore(node, anchor || null);
     }
@@ -50,6 +53,9 @@ var app = (function () {
     function space() {
         return text(' ');
     }
+    function empty() {
+        return text('');
+    }
     function listen(node, event, handler, options) {
         node.addEventListener(event, handler, options);
         return () => node.removeEventListener(event, handler, options);
@@ -62,6 +68,17 @@ var app = (function () {
     }
     function children(element) {
         return Array.from(element.childNodes);
+    }
+    function set_input_value(input, value) {
+        input.value = value == null ? '' : value;
+    }
+    function set_style(node, key, value, important) {
+        if (value == null) {
+            node.style.removeProperty(key);
+        }
+        else {
+            node.style.setProperty(key, value, important ? 'important' : '');
+        }
     }
     function custom_event(type, detail, { bubbles = false, cancelable = false } = {}) {
         const e = document.createEvent('CustomEvent');
@@ -203,6 +220,99 @@ var app = (function () {
             block.i(local);
         }
     }
+
+    function destroy_block(block, lookup) {
+        block.d(1);
+        lookup.delete(block.key);
+    }
+    function update_keyed_each(old_blocks, dirty, get_key, dynamic, ctx, list, lookup, node, destroy, create_each_block, next, get_context) {
+        let o = old_blocks.length;
+        let n = list.length;
+        let i = o;
+        const old_indexes = {};
+        while (i--)
+            old_indexes[old_blocks[i].key] = i;
+        const new_blocks = [];
+        const new_lookup = new Map();
+        const deltas = new Map();
+        const updates = [];
+        i = n;
+        while (i--) {
+            const child_ctx = get_context(ctx, list, i);
+            const key = get_key(child_ctx);
+            let block = lookup.get(key);
+            if (!block) {
+                block = create_each_block(key, child_ctx);
+                block.c();
+            }
+            else if (dynamic) {
+                // defer updates until all the DOM shuffling is done
+                updates.push(() => block.p(child_ctx, dirty));
+            }
+            new_lookup.set(key, new_blocks[i] = block);
+            if (key in old_indexes)
+                deltas.set(key, Math.abs(i - old_indexes[key]));
+        }
+        const will_move = new Set();
+        const did_move = new Set();
+        function insert(block) {
+            transition_in(block, 1);
+            block.m(node, next);
+            lookup.set(block.key, block);
+            next = block.first;
+            n--;
+        }
+        while (o && n) {
+            const new_block = new_blocks[n - 1];
+            const old_block = old_blocks[o - 1];
+            const new_key = new_block.key;
+            const old_key = old_block.key;
+            if (new_block === old_block) {
+                // do nothing
+                next = new_block.first;
+                o--;
+                n--;
+            }
+            else if (!new_lookup.has(old_key)) {
+                // remove old block
+                destroy(old_block, lookup);
+                o--;
+            }
+            else if (!lookup.has(new_key) || will_move.has(new_key)) {
+                insert(new_block);
+            }
+            else if (did_move.has(old_key)) {
+                o--;
+            }
+            else if (deltas.get(new_key) > deltas.get(old_key)) {
+                did_move.add(new_key);
+                insert(new_block);
+            }
+            else {
+                will_move.add(old_key);
+                o--;
+            }
+        }
+        while (o--) {
+            const old_block = old_blocks[o];
+            if (!new_lookup.has(old_block.key))
+                destroy(old_block, lookup);
+        }
+        while (n)
+            insert(new_blocks[n - 1]);
+        run_all(updates);
+        return new_blocks;
+    }
+    function validate_each_keys(ctx, list, get_context, get_key) {
+        const keys = new Set();
+        for (let i = 0; i < list.length; i++) {
+            const key = get_key(get_context(ctx, list, i));
+            if (keys.has(key)) {
+                throw new Error('Cannot have duplicate keys in a keyed each');
+            }
+            keys.add(key);
+        }
+    }
     function mount_component(component, target, anchor, customElement) {
         const { fragment, after_update } = component.$$;
         fragment && fragment.m(target, anchor);
@@ -339,6 +449,10 @@ var app = (function () {
     function dispatch_dev(type, detail) {
         document.dispatchEvent(custom_event(type, Object.assign({ version: '3.59.2' }, detail), { bubbles: true }));
     }
+    function append_dev(target, node) {
+        dispatch_dev('SvelteDOMInsert', { target, node });
+        append(target, node);
+    }
     function insert_dev(target, node, anchor) {
         dispatch_dev('SvelteDOMInsert', { target, node, anchor });
         insert(target, node, anchor);
@@ -368,6 +482,26 @@ var app = (function () {
             dispatch_dev('SvelteDOMRemoveAttribute', { node, attribute });
         else
             dispatch_dev('SvelteDOMSetAttribute', { node, attribute, value });
+    }
+    function prop_dev(node, property, value) {
+        node[property] = value;
+        dispatch_dev('SvelteDOMSetProperty', { node, property, value });
+    }
+    function set_data_dev(text, data) {
+        data = '' + data;
+        if (text.data === data)
+            return;
+        dispatch_dev('SvelteDOMSetData', { node: text, data });
+        text.data = data;
+    }
+    function validate_each_argument(arg) {
+        if (typeof arg !== 'string' && !(arg && typeof arg === 'object' && 'length' in arg)) {
+            let msg = '{#each} only iterates over array-like objects.';
+            if (typeof Symbol === 'function' && arg && Symbol.iterator in arg) {
+                msg += ' You can use a spread to convert this iterable into an array.';
+            }
+            throw new Error(msg);
+        }
     }
     function validate_slots(name, slot, keys) {
         for (const slot_key of Object.keys(slot)) {
@@ -10611,51 +10745,574 @@ var app = (function () {
 
     /* src/App.svelte generated by Svelte v3.59.2 */
 
-    const { Error: Error$, Object: Object$, console: console$ } = globals;
+    const { Error: Error$, Map: Map$, Object: Object$, console: console$ } = globals;
     const file$ = "src/App.svelte";
 
-    function create_fragment(ctx) {
-    	let canvas$;
-    	let t0$;
-    	let button$;
+    function get_each_context$(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[18] = list[i];
+    	child_ctx[20] = i;
+    	return child_ctx;
+    }
+
+    // (611:0) {#each labels as label, i (i)}
+    function create_each_block$(key$_1, ctx) {
+    	let div$;
+    	let t$_value$ = /*label*/ ctx[18].name + "";
+    	let t$;
+
+    	const block$ = {
+    		key: key$_1,
+    		first: null,
+    		c: function create() {
+    			div$ = element("div");
+    			t$ = text(t$_value$);
+    			attr_dev(div$, "class", "node-label svelte-1fo8fom");
+    			set_style(div$, "left", /*label*/ ctx[18].x + "px");
+    			set_style(div$, "top", /*label*/ ctx[18].y + "px");
+    			add_location(div$, file$, 611, 4, 24167);
+    			this.first = div$;
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div$, anchor);
+    			append_dev(div$, t$);
+    		},
+    		p: function update(new_ctx, dirty) {
+    			ctx = new_ctx;
+    			if (dirty & /*labels*/ 2 && t$_value$ !== (t$_value$ = /*label*/ ctx[18].name + "")) set_data_dev(t$, t$_value$);
+
+    			if (dirty & /*labels*/ 2) {
+    				set_style(div$, "left", /*label*/ ctx[18].x + "px");
+    			}
+
+    			if (dirty & /*labels*/ 2) {
+    				set_style(div$, "top", /*label*/ ctx[18].y + "px");
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div$);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block: block$,
+    		id: create_each_block$.name,
+    		type: "each",
+    		source: "(611:0) {#each labels as label, i (i)}",
+    		ctx
+    	});
+
+    	return block$;
+    }
+
+    // (622:4) {#if selectedShape}
+    function create_if_block$(ctx) {
+    	let if_block$_anchor$;
+
+    	function select_block_type$(ctx, dirty) {
+    		if (/*selectedShape*/ ctx[2].role === "input") return create_if_block$_1;
+    		if (/*selectedShape*/ ctx[2].role === "output") return create_if_block$_2;
+    		return create_else_block$;
+    	}
+
+    	let current_block_type$ = select_block_type$(ctx);
+    	let if_block$ = current_block_type$(ctx);
+
+    	const block$ = {
+    		c: function create() {
+    			if_block$.c();
+    			if_block$_anchor$ = empty();
+    		},
+    		m: function mount(target, anchor) {
+    			if_block$.m(target, anchor);
+    			insert_dev(target, if_block$_anchor$, anchor);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (current_block_type$ === (current_block_type$ = select_block_type$(ctx)) && if_block$) {
+    				if_block$.p(ctx, dirty);
+    			} else {
+    				if_block$.d(1);
+    				if_block$ = current_block_type$(ctx);
+
+    				if (if_block$) {
+    					if_block$.c();
+    					if_block$.m(if_block$_anchor$.parentNode, if_block$_anchor$);
+    				}
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if_block$.d(detaching);
+    			if (detaching) detach_dev(if_block$_anchor$);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block: block$,
+    		id: create_if_block$.name,
+    		type: "if",
+    		source: "(622:4) {#if selectedShape}",
+    		ctx
+    	});
+
+    	return block$;
+    }
+
+    // (634:8) {:else}
+    function create_else_block$(ctx) {
+    	let h3$;
+    	let t1$;
+    	let label0$;
+    	let t2$;
+    	let input0$;
+    	let t3$;
+    	let label1$;
+    	let t4$;
+    	let input1$;
+    	let t5$;
+    	let label2$;
+    	let t7$;
+    	let label3$;
+    	let t9$;
+    	let textarea$;
     	let mounted;
     	let dispose;
 
     	const block$ = {
     		c: function create() {
+    			h3$ = element("h3");
+    			h3$.textContent = "Node";
+    			t1$ = space();
+    			label0$ = element("label");
+    			t2$ = text("Name: ");
+    			input0$ = element("input");
+    			t3$ = space();
+    			label1$ = element("label");
+    			t4$ = text("Command: ");
+    			input1$ = element("input");
+    			t5$ = space();
+    			label2$ = element("label");
+    			label2$.textContent = "Use {input} to reference the previous node's output";
+    			t7$ = space();
+    			label3$ = element("label");
+    			label3$.textContent = "Output:";
+    			t9$ = space();
+    			textarea$ = element("textarea");
+    			attr_dev(h3$, "class", "svelte-1fo8fom");
+    			add_location(h3$, file$, 634, 12, 25091);
+    			attr_dev(input0$, "class", "svelte-1fo8fom");
+    			add_location(input0$, file$, 635, 25, 25130);
+    			attr_dev(label0$, "class", "svelte-1fo8fom");
+    			add_location(label0$, file$, 635, 12, 25117);
+    			attr_dev(input1$, "class", "svelte-1fo8fom");
+    			add_location(input1$, file$, 636, 28, 25208);
+    			attr_dev(label1$, "class", "svelte-1fo8fom");
+    			add_location(label1$, file$, 636, 12, 25192);
+    			attr_dev(label2$, "class", "hint svelte-1fo8fom");
+    			add_location(label2$, file$, 637, 12, 25273);
+    			attr_dev(label3$, "class", "svelte-1fo8fom");
+    			add_location(label3$, file$, 640, 12, 25405);
+    			attr_dev(textarea$, "rows", "5");
+    			textarea$.readOnly = true;
+    			attr_dev(textarea$, "class", "svelte-1fo8fom");
+    			add_location(textarea$, file$, 641, 12, 25440);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, h3$, anchor);
+    			insert_dev(target, t1$, anchor);
+    			insert_dev(target, label0$, anchor);
+    			append_dev(label0$, t2$);
+    			append_dev(label0$, input0$);
+    			set_input_value(input0$, /*selectedShape*/ ctx[2].name);
+    			insert_dev(target, t3$, anchor);
+    			insert_dev(target, label1$, anchor);
+    			append_dev(label1$, t4$);
+    			append_dev(label1$, input1$);
+    			set_input_value(input1$, /*selectedShape*/ ctx[2].command);
+    			insert_dev(target, t5$, anchor);
+    			insert_dev(target, label2$, anchor);
+    			insert_dev(target, t7$, anchor);
+    			insert_dev(target, label3$, anchor);
+    			insert_dev(target, t9$, anchor);
+    			insert_dev(target, textarea$, anchor);
+    			set_input_value(textarea$, /*selectedShape*/ ctx[2].outputText);
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(input0$, "input", /*input0$_input_handler$*/ ctx[13]),
+    					listen_dev(input1$, "input", /*input1$_input_handler$*/ ctx[14]),
+    					listen_dev(textarea$, "input", /*textarea$_input_handler$_2*/ ctx[15])
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*selectedShape*/ 4 && input0$.value !== /*selectedShape*/ ctx[2].name) {
+    				set_input_value(input0$, /*selectedShape*/ ctx[2].name);
+    			}
+
+    			if (dirty & /*selectedShape*/ 4 && input1$.value !== /*selectedShape*/ ctx[2].command) {
+    				set_input_value(input1$, /*selectedShape*/ ctx[2].command);
+    			}
+
+    			if (dirty & /*selectedShape*/ 4) {
+    				set_input_value(textarea$, /*selectedShape*/ ctx[2].outputText);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(h3$);
+    			if (detaching) detach_dev(t1$);
+    			if (detaching) detach_dev(label0$);
+    			if (detaching) detach_dev(t3$);
+    			if (detaching) detach_dev(label1$);
+    			if (detaching) detach_dev(t5$);
+    			if (detaching) detach_dev(label2$);
+    			if (detaching) detach_dev(t7$);
+    			if (detaching) detach_dev(label3$);
+    			if (detaching) detach_dev(t9$);
+    			if (detaching) detach_dev(textarea$);
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block: block$,
+    		id: create_else_block$.name,
+    		type: "else",
+    		source: "(634:8) {:else}",
+    		ctx
+    	});
+
+    	return block$;
+    }
+
+    // (628:50) 
+    function create_if_block$_2(ctx) {
+    	let h3$;
+    	let t1$;
+    	let label0$;
+    	let t2$;
+    	let t3$_value$ = /*selectedShape*/ ctx[2].name + "";
+    	let t3$;
+    	let t4$;
+    	let label1$;
+    	let t6$;
+    	let textarea$;
+    	let mounted;
+    	let dispose;
+
+    	const block$ = {
+    		c: function create() {
+    			h3$ = element("h3");
+    			h3$.textContent = "Output";
+    			t1$ = space();
+    			label0$ = element("label");
+    			t2$ = text("Name: ");
+    			t3$ = text(t3$_value$);
+    			t4$ = space();
+    			label1$ = element("label");
+    			label1$.textContent = "Output:";
+    			t6$ = space();
+    			textarea$ = element("textarea");
+    			attr_dev(h3$, "class", "svelte-1fo8fom");
+    			add_location(h3$, file$, 628, 12, 24855);
+    			attr_dev(label0$, "class", "svelte-1fo8fom");
+    			add_location(label0$, file$, 629, 12, 24883);
+    			attr_dev(label1$, "class", "svelte-1fo8fom");
+    			add_location(label1$, file$, 630, 12, 24937);
+    			attr_dev(textarea$, "rows", "5");
+    			textarea$.readOnly = true;
+    			attr_dev(textarea$, "class", "svelte-1fo8fom");
+    			add_location(textarea$, file$, 631, 12, 24972);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, h3$, anchor);
+    			insert_dev(target, t1$, anchor);
+    			insert_dev(target, label0$, anchor);
+    			append_dev(label0$, t2$);
+    			append_dev(label0$, t3$);
+    			insert_dev(target, t4$, anchor);
+    			insert_dev(target, label1$, anchor);
+    			insert_dev(target, t6$, anchor);
+    			insert_dev(target, textarea$, anchor);
+    			set_input_value(textarea$, /*selectedShape*/ ctx[2].outputText);
+
+    			if (!mounted) {
+    				dispose = listen_dev(textarea$, "input", /*textarea$_input_handler$_1*/ ctx[12]);
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*selectedShape*/ 4 && t3$_value$ !== (t3$_value$ = /*selectedShape*/ ctx[2].name + "")) set_data_dev(t3$, t3$_value$);
+
+    			if (dirty & /*selectedShape*/ 4) {
+    				set_input_value(textarea$, /*selectedShape*/ ctx[2].outputText);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(h3$);
+    			if (detaching) detach_dev(t1$);
+    			if (detaching) detach_dev(label0$);
+    			if (detaching) detach_dev(t4$);
+    			if (detaching) detach_dev(label1$);
+    			if (detaching) detach_dev(t6$);
+    			if (detaching) detach_dev(textarea$);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block: block$,
+    		id: create_if_block$_2.name,
+    		type: "if",
+    		source: "(628:50) ",
+    		ctx
+    	});
+
+    	return block$;
+    }
+
+    // (623:8) {#if selectedShape.role === "input"}
+    function create_if_block$_1(ctx) {
+    	let h3$;
+    	let t1$;
+    	let label0$;
+    	let t2$;
+    	let t3$_value$ = /*selectedShape*/ ctx[2].name + "";
+    	let t3$;
+    	let t4$;
+    	let label1$;
+    	let t6$;
+    	let textarea$;
+    	let mounted;
+    	let dispose;
+
+    	const block$ = {
+    		c: function create() {
+    			h3$ = element("h3");
+    			h3$.textContent = "Input";
+    			t1$ = space();
+    			label0$ = element("label");
+    			t2$ = text("Name: ");
+    			t3$ = text(t3$_value$);
+    			t4$ = space();
+    			label1$ = element("label");
+    			label1$.textContent = "Input:";
+    			t6$ = space();
+    			textarea$ = element("textarea");
+    			attr_dev(h3$, "class", "svelte-1fo8fom");
+    			add_location(h3$, file$, 623, 12, 24609);
+    			attr_dev(label0$, "class", "svelte-1fo8fom");
+    			add_location(label0$, file$, 624, 12, 24636);
+    			attr_dev(label1$, "class", "svelte-1fo8fom");
+    			add_location(label1$, file$, 625, 12, 24690);
+    			attr_dev(textarea$, "rows", "5");
+    			attr_dev(textarea$, "class", "svelte-1fo8fom");
+    			add_location(textarea$, file$, 626, 12, 24724);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, h3$, anchor);
+    			insert_dev(target, t1$, anchor);
+    			insert_dev(target, label0$, anchor);
+    			append_dev(label0$, t2$);
+    			append_dev(label0$, t3$);
+    			insert_dev(target, t4$, anchor);
+    			insert_dev(target, label1$, anchor);
+    			insert_dev(target, t6$, anchor);
+    			insert_dev(target, textarea$, anchor);
+    			set_input_value(textarea$, /*selectedShape*/ ctx[2].inputText);
+
+    			if (!mounted) {
+    				dispose = listen_dev(textarea$, "input", /*textarea$_input_handler$*/ ctx[11]);
+    				mounted = true;
+    			}
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*selectedShape*/ 4 && t3$_value$ !== (t3$_value$ = /*selectedShape*/ ctx[2].name + "")) set_data_dev(t3$, t3$_value$);
+
+    			if (dirty & /*selectedShape*/ 4) {
+    				set_input_value(textarea$, /*selectedShape*/ ctx[2].inputText);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(h3$);
+    			if (detaching) detach_dev(t1$);
+    			if (detaching) detach_dev(label0$);
+    			if (detaching) detach_dev(t4$);
+    			if (detaching) detach_dev(label1$);
+    			if (detaching) detach_dev(t6$);
+    			if (detaching) detach_dev(textarea$);
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block: block$,
+    		id: create_if_block$_1.name,
+    		type: "if",
+    		source: "(623:8) {#if selectedShape.role === \\\"input\\\"}",
+    		ctx
+    	});
+
+    	return block$;
+    }
+
+    function create_fragment(ctx) {
+    	let canvas$;
+    	let t0$;
+    	let each_blocks$ = [];
+    	let each$_lookup$ = new Map$();
+    	let t1$;
+    	let div0$;
+    	let button0$;
+    	let t3$;
+    	let button1$;
+    	let t4$;
+    	let t5$;
+    	let button2$;
+    	let t6$;
+    	let button2$_disabled_value$;
+    	let t7$;
+    	let div1$;
+    	let mounted;
+    	let dispose;
+    	let each_value$ = /*labels*/ ctx[1];
+    	validate_each_argument(each_value$);
+    	const get_key$ = ctx => /*i*/ ctx[20];
+    	validate_each_keys(ctx, each_value$, get_each_context$, get_key$);
+
+    	for (let i = 0; i < each_value$.length; i += 1) {
+    		let child_ctx = get_each_context$(ctx, each_value$, i);
+    		let key = get_key$(child_ctx);
+    		each$_lookup$.set(key, each_blocks$[i] = create_each_block$(key, child_ctx));
+    	}
+
+    	let if_block$ = /*selectedShape*/ ctx[2] && create_if_block$(ctx);
+
+    	const block$ = {
+    		c: function create() {
     			canvas$ = element("canvas");
     			t0$ = space();
-    			button$ = element("button");
-    			button$.textContent = "Add Circle";
-    			attr_dev(canvas$, "class", "svelte-1u2bbf4");
-    			add_location(canvas$, file$, 361, 0, 15123);
-    			attr_dev(button$, "class", "svelte-1u2bbf4");
-    			add_location(button$, file$, 362, 0, 15160);
+
+    			for (let i = 0; i < each_blocks$.length; i += 1) {
+    				each_blocks$[i].c();
+    			}
+
+    			t1$ = space();
+    			div0$ = element("div");
+    			button0$ = element("button");
+    			button0$.textContent = "Add Circle";
+    			t3$ = space();
+    			button1$ = element("button");
+    			t4$ = text("Play");
+    			t5$ = space();
+    			button2$ = element("button");
+    			t6$ = text("Stop");
+    			t7$ = space();
+    			div1$ = element("div");
+    			if (if_block$) if_block$.c();
+    			attr_dev(canvas$, "class", "svelte-1fo8fom");
+    			add_location(canvas$, file$, 609, 0, 24095);
+    			attr_dev(button0$, "class", "svelte-1fo8fom");
+    			add_location(button0$, file$, 616, 4, 24304);
+    			button1$.disabled = /*isRunning*/ ctx[3];
+    			attr_dev(button1$, "class", "svelte-1fo8fom");
+    			add_location(button1$, file$, 617, 4, 24357);
+    			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[3];
+    			attr_dev(button2$, "class", "svelte-1fo8fom");
+    			add_location(button2$, file$, 618, 4, 24428);
+    			attr_dev(div0$, "class", "controls svelte-1fo8fom");
+    			add_location(div0$, file$, 615, 0, 24277);
+    			attr_dev(div1$, "class", "info-panel svelte-1fo8fom");
+    			add_location(div1$, file$, 620, 0, 24503);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, canvas$, anchor);
-    			/*canvas$_binding$*/ ctx[2](canvas$);
+    			/*canvas$_binding$*/ ctx[10](canvas$);
     			insert_dev(target, t0$, anchor);
-    			insert_dev(target, button$, anchor);
+
+    			for (let i = 0; i < each_blocks$.length; i += 1) {
+    				if (each_blocks$[i]) {
+    					each_blocks$[i].m(target, anchor);
+    				}
+    			}
+
+    			insert_dev(target, t1$, anchor);
+    			insert_dev(target, div0$, anchor);
+    			append_dev(div0$, button0$);
+    			append_dev(div0$, t3$);
+    			append_dev(div0$, button1$);
+    			append_dev(button1$, t4$);
+    			append_dev(div0$, t5$);
+    			append_dev(div0$, button2$);
+    			append_dev(button2$, t6$);
+    			insert_dev(target, t7$, anchor);
+    			insert_dev(target, div1$, anchor);
+    			if (if_block$) if_block$.m(div1$, null);
 
     			if (!mounted) {
-    				dispose = listen_dev(button$, "click", /*addCircle*/ ctx[1], false, false, false, false);
+    				dispose = [
+    					listen_dev(button0$, "click", /*addCircle*/ ctx[4], false, false, false, false),
+    					listen_dev(button1$, "click", /*playPipeline*/ ctx[5], false, false, false, false),
+    					listen_dev(button2$, "click", /*stopPipeline*/ ctx[6], false, false, false, false)
+    				];
+
     				mounted = true;
     			}
     		},
-    		p: noop,
+    		p: function update(ctx, [dirty]) {
+    			if (dirty & /*labels*/ 2) {
+    				each_value$ = /*labels*/ ctx[1];
+    				validate_each_argument(each_value$);
+    				validate_each_keys(ctx, each_value$, get_each_context$, get_key$);
+    				each_blocks$ = update_keyed_each(each_blocks$, dirty, get_key$, 1, ctx, each_value$, each$_lookup$, t1$.parentNode, destroy_block, create_each_block$, t1$, get_each_context$);
+    			}
+
+    			if (dirty & /*isRunning*/ 8) {
+    				prop_dev(button1$, "disabled", /*isRunning*/ ctx[3]);
+    			}
+
+    			if (dirty & /*isRunning*/ 8 && button2$_disabled_value$ !== (button2$_disabled_value$ = !/*isRunning*/ ctx[3])) {
+    				prop_dev(button2$, "disabled", button2$_disabled_value$);
+    			}
+
+    			if (/*selectedShape*/ ctx[2]) {
+    				if (if_block$) {
+    					if_block$.p(ctx, dirty);
+    				} else {
+    					if_block$ = create_if_block$(ctx);
+    					if_block$.c();
+    					if_block$.m(div1$, null);
+    				}
+    			} else if (if_block$) {
+    				if_block$.d(1);
+    				if_block$ = null;
+    			}
+    		},
     		i: noop,
     		o: noop,
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(canvas$);
-    			/*canvas$_binding$*/ ctx[2](null);
+    			/*canvas$_binding$*/ ctx[10](null);
     			if (detaching) detach_dev(t0$);
-    			if (detaching) detach_dev(button$);
+
+    			for (let i = 0; i < each_blocks$.length; i += 1) {
+    				each_blocks$[i].d(detaching);
+    			}
+
+    			if (detaching) detach_dev(t1$);
+    			if (detaching) detach_dev(div0$);
+    			if (detaching) detach_dev(t7$);
+    			if (detaching) detach_dev(div1$);
+    			if (if_block$) if_block$.d();
     			mounted = false;
-    			dispose();
+    			run_all(dispose);
     		}
     	};
 
@@ -10670,20 +11327,90 @@ var app = (function () {
     	return block$;
     }
 
+    async function runCommand(cmd, input) {
+    	// If no command provided, do not forward input by default
+    	if (!cmd) return "";
+
+    	// Replace template variable {input} with actual data
+    	const expanded = cmd.replace(/{input}/g, input);
+
+    	const parts = expanded.trim().split(" ");
+    	const name = parts[0].toLowerCase();
+
+    	if (name === "curl" && parts[1]) {
+    		try {
+    			const res = await fetch(parts[1]);
+    			return await res.text();
+    		} catch(e) {
+    			return `Error fetching ${parts[1]}: ${e.message}`;
+    		}
+    	} else if (name === "uppercase") {
+    		return input.toUpperCase();
+    	} else if (name === "lowercase") {
+    		return input.toLowerCase();
+    	} else if (name === "echo") {
+    		// Prototype basic shell 'echo': return concatenated arguments
+    		return parts.slice(1).join(" ");
+    	}
+
+    	// Fallback: return the expanded command string
+    	return "";
+    }
+
     function instance$($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
     	let canvas;
-    	let scene = [];
+
+    	let scene = [
+    		{
+    			type: "circle",
+    			role: "input",
+    			center: [-0.9, 0],
+    			radius: 0.1,
+    			color: [0, 1, 0, 1],
+    			selected: false,
+    			inputText: "",
+    			name: "Input",
+    			highlight: false
+    		},
+    		{
+    			type: "circle",
+    			role: "output",
+    			center: [0.9, 0],
+    			radius: 0.1,
+    			color: [1, 0, 0, 1],
+    			selected: false,
+    			outputText: "",
+    			name: "Output",
+    			highlight: false
+    		}
+    	];
+
+    	// View transform for positioning and zoom
+    	let viewScale = 1;
+
+    	let viewOffset = [0, 0];
+
+    	// Screen-space labels below each node
+    	let labels = [];
 
     	function addCircle() {
     		scene.push({
     			type: "circle",
+    			role: "default",
+    			name: "",
+    			command: "",
     			center: [Math.random() * 1.8 - 0.9, Math.random() * 1.8 - 0.9],
     			radius: 0.1,
     			color: [Math.random(), Math.random(), Math.random(), 1.0],
-    			selected: false
+    			selected: false,
+    			highlight: false,
+    			outputText: ""
     		});
+
+    		// Trigger reactivity for scene change
+    		$$invalidate(7, scene = [...scene]);
     	}
 
     	onMount(() => {
@@ -10691,23 +11418,19 @@ var app = (function () {
     		const resizeCanvas = () => {
     			$$invalidate(0, canvas.width = window.innerWidth * window.devicePixelRatio, canvas);
     			$$invalidate(0, canvas.height = window.innerHeight * window.devicePixelRatio, canvas);
-    			$$invalidate(0, canvas.style.width = window.innerWidth + 'px', canvas);
-    			$$invalidate(0, canvas.style.height = window.innerHeight + 'px', canvas);
+    			$$invalidate(0, canvas.style.width = window.innerWidth + "px", canvas);
+    			$$invalidate(0, canvas.style.height = window.innerHeight + "px", canvas);
     		};
 
     		resizeCanvas();
-    		window.addEventListener('resize', resizeCanvas);
+    		window.addEventListener("resize", resizeCanvas);
 
     		const regl$1 = regl({
     			canvas,
     			pixelRatio: window.devicePixelRatio
     		});
 
-    		// Pan and zoom state
-    		let viewScale = 1;
-
-    		let viewOffset = [0, 0];
-
+    		// Pan and zoom state uses component-level viewScale & viewOffset
     		// Smooth zoom target values
     		let viewScaleTarget = viewScale;
 
@@ -10757,14 +11480,14 @@ var app = (function () {
     			attributes: { position: quadBuffer },
     			uniforms: {
     				aspect: ctx => ctx.viewportHeight / ctx.viewportWidth,
-    				center: regl$1.prop('center'),
-    				radius: regl$1.prop('radius'),
-    				color: regl$1.prop('color'),
+    				center: regl$1.prop("center"),
+    				radius: regl$1.prop("radius"),
+    				color: regl$1.prop("color"),
     				viewScale: () => viewScale,
     				viewOffset: () => viewOffset
     			},
     			count: 6,
-    			primitive: 'triangles'
+    			primitive: "triangles"
     		});
 
     		// Edge drawing commands
@@ -10784,15 +11507,15 @@ var app = (function () {
                 vec2 pos = position * viewScale + viewOffset;
                 gl_Position = vec4(pos, 0, 1);
             }`,
-    			attributes: { position: regl$1.prop('positions') },
+    			attributes: { position: regl$1.prop("positions") },
     			uniforms: {
-    				color: regl$1.prop('color'),
+    				color: regl$1.prop("color"),
     				viewScale: () => viewScale,
     				viewOffset: () => viewOffset
     			},
     			// number of vertices for each line segment (2 points)
     			count: 2,
-    			primitive: 'lines'
+    			primitive: "lines"
     		});
 
     		const drawTriangle = regl$1({
@@ -10811,15 +11534,15 @@ var app = (function () {
                 vec2 pos = position * viewScale + viewOffset;
                 gl_Position = vec4(pos, 0, 1);
             }`,
-    			attributes: { position: regl$1.prop('positions') },
+    			attributes: { position: regl$1.prop("positions") },
     			uniforms: {
-    				color: regl$1.prop('color'),
+    				color: regl$1.prop("color"),
     				viewScale: () => viewScale,
     				viewOffset: () => viewOffset
     			},
     			// number of vertices for each triangle (3 points)
     			count: 3,
-    			primitive: 'triangles'
+    			primitive: "triangles"
     		});
 
     		// Drag and drop support for circles
@@ -10827,8 +11550,15 @@ var app = (function () {
 
     		let dragOffset = [0, 0];
 
-    		canvas.addEventListener('mousedown', e => {
+    		canvas.addEventListener("mousedown", e => {
     			if (e.button !== 0) return;
+
+    			// Clear any pipeline highlight when manually selecting
+    			scene.forEach(s => s.highlight = false);
+
+    			// Trigger reactive update to clear highlight in UI
+    			$$invalidate(7, scene = [...scene]);
+
     			const rect = canvas.getBoundingClientRect();
 
     			// Pointer in NDC
@@ -10845,7 +11575,7 @@ var app = (function () {
 
     			for (let i = scene.length - 1; i >= 0; i--) {
     				const shape = scene[i];
-    				if (shape.type !== 'circle') continue;
+    				if (shape.type !== "circle") continue;
     				const dx = worldX - shape.center[0];
     				const dy = worldY - shape.center[1];
 
@@ -10860,24 +11590,24 @@ var app = (function () {
     			if (hitShape) {
     				// Clear any edge selections when selecting a circle
     				scene.forEach(s => {
-    					if (s.type === 'edge') s.selected = false;
+    					if (s.type === "edge") s.selected = false;
     				});
 
-    				const prevSelected = scene.find(s => s.type === 'circle' && s.selected);
+    				const prevSelected = scene.find(s => s.type === "circle" && s.selected);
 
-    				if (prevSelected && prevSelected !== hitShape) {
+    				if (prevSelected && prevSelected !== hitShape && prevSelected.role !== "output") {
     					// Remove any existing edge between these two circles
     					for (let i = scene.length - 1; i >= 0; i--) {
     						const s = scene[i];
 
-    						if (s.type === 'edge' && (s.from === prevSelected && s.to === hitShape || s.from === hitShape && s.to === prevSelected)) {
+    						if (s.type === "edge" && (s.from === prevSelected && s.to === hitShape || s.from === hitShape && s.to === prevSelected)) {
     							scene.splice(i, 1);
     						}
     					}
 
     					// Connect the previously selected circle to the clicked circle
     					scene.push({
-    						type: 'edge',
+    						type: "edge",
     						from: prevSelected,
     						to: hitShape,
     						color: [1, 1, 1, 1],
@@ -10886,11 +11616,14 @@ var app = (function () {
 
     					// Unselect all circles
     					scene.forEach(s => {
-    						if (s.type === 'circle') s.selected = false;
+    						if (s.type === "circle") s.selected = false;
     					});
 
     					// Cancel any dragging state
     					dragging = null;
+
+    					// Trigger reactivity for scene changes
+    					$$invalidate(7, scene = [...scene]);
 
     					return;
     				}
@@ -10902,10 +11635,13 @@ var app = (function () {
 
     				// Select only this circle
     				scene.forEach(s => {
-    					if (s.type === 'circle') s.selected = false;
+    					if (s.type === "circle") s.selected = false;
     				});
 
     				dragging.selected = true;
+
+    				// Trigger reactivity for selection change
+    				$$invalidate(7, scene = [...scene]);
     			} else {
     				// Try selecting an edge if clicked near it
     				const EDGE_TOLERANCE = 0.03;
@@ -10914,7 +11650,7 @@ var app = (function () {
 
     				for (let i = scene.length - 1; i >= 0; i--) {
     					const s = scene[i];
-    					if (s.type !== 'edge') continue;
+    					if (s.type !== "edge") continue;
     					const x1 = s.from.center[0], y1 = s.from.center[1];
     					const x2 = s.to.center[0], y2 = s.to.center[1];
     					const dx = x2 - x1, dy = y2 - y1;
@@ -10933,7 +11669,7 @@ var app = (function () {
     				if (hitEdge) {
     					// Deselect all circles and edges
     					scene.forEach(s => {
-    						if (s.type === 'circle' || s.type === 'edge') s.selected = false;
+    						if (s.type === "circle" || s.type === "edge") s.selected = false;
     					});
 
     					hitEdge.selected = true;
@@ -10942,13 +11678,20 @@ var app = (function () {
     					dragging = null;
 
     					isPanning = false;
+
+    					// Trigger reactivity for edge selection
+    					$$invalidate(7, scene = [...scene]);
+
     					return;
     				}
 
     				// No shape hit: deselect everything and start panning
     				scene.forEach(s => {
-    					if (s.type === 'circle' || s.type === 'edge') s.selected = false;
+    					if (s.type === "circle" || s.type === "edge") s.selected = false;
     				});
+
+    				// Trigger reactivity for deselection
+    				$$invalidate(7, scene = [...scene]);
 
     				isPanning = true;
     				panStart = [e.clientX, e.clientY];
@@ -10957,7 +11700,7 @@ var app = (function () {
     			}
     		});
 
-    		window.addEventListener('mousemove', e => {
+    		window.addEventListener("mousemove", e => {
     			if (dragging) {
     				const rect = canvas.getBoundingClientRect();
 
@@ -10975,14 +11718,14 @@ var app = (function () {
     			}
     		});
 
-    		window.addEventListener('mouseup', () => {
+    		window.addEventListener("mouseup", () => {
     			dragging = null;
     		});
 
     		// Pan and zoom event handlers
-    		canvas.addEventListener('contextmenu', e => e.preventDefault());
+    		canvas.addEventListener("contextmenu", e => e.preventDefault());
 
-    		canvas.addEventListener('wheel', e => {
+    		canvas.addEventListener("wheel", e => {
     			e.preventDefault();
     			const rect = canvas.getBoundingClientRect();
     			const px = (e.clientX - rect.left) / rect.width * 2 - 1;
@@ -10993,7 +11736,7 @@ var app = (function () {
     			viewOffsetTarget[1] = py - (py - viewOffsetTarget[1]) * factor;
     		});
 
-    		canvas.addEventListener('mousedown', e => {
+    		canvas.addEventListener("mousedown", e => {
     			if (e.button === 2) {
     				isPanning = true;
     				panStart = [e.clientX, e.clientY];
@@ -11002,7 +11745,7 @@ var app = (function () {
     			}
     		});
 
-    		window.addEventListener('mousemove', e => {
+    		window.addEventListener("mousemove", e => {
     			if (isPanning) {
     				const rect = canvas.getBoundingClientRect();
     				const dx = e.clientX - panStart[0];
@@ -11011,44 +11754,84 @@ var app = (function () {
     				const ndcY = -dy / rect.height * 2;
     				viewOffsetTarget[0] = offsetStart[0] + ndcX;
     				viewOffsetTarget[1] = offsetStart[1] + ndcY;
-    				viewOffset[0] = viewOffsetTarget[0];
-    				viewOffset[1] = viewOffsetTarget[1];
+    				$$invalidate(9, viewOffset[0] = viewOffsetTarget[0], viewOffset);
+    				$$invalidate(9, viewOffset[1] = viewOffsetTarget[1], viewOffset);
     			}
     		});
 
-    		window.addEventListener('mouseup', e => {
+    		window.addEventListener("mouseup", e => {
     			// End panning on right or left mouse release
     			if (e.button === 2 || e.button === 0) {
     				isPanning = false;
     			}
     		});
 
-    		// Delete selected edge on Backspace
-    		window.addEventListener('keydown', e => {
-    			if (e.key === 'Backspace') {
-    				e.preventDefault();
-    				const idx = scene.findIndex(s => s.type === 'edge' && s.selected);
+    		// Delete selected circles or edges on Backspace when not editing text
+    		window.addEventListener("keydown", e => {
+    			if (e.key !== "Backspace") {
+    				return;
+    			}
 
-    				if (idx !== -1) {
-    					scene.splice(idx, 1);
+    			const target = e.target;
+
+    			// Ignore backspace if focus is on an input or textarea
+    			if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+    				return;
+    			}
+
+    			// Prevent default browser back navigation or deletion behavior
+    			e.preventDefault();
+
+    			// Delete selected circle if any
+    			const circleIdx = scene.findIndex(s => s.type === "circle" && s.selected);
+
+    			if (circleIdx !== -1) {
+    				const circle = scene[circleIdx];
+
+    				// Prevent deletion of input/output nodes
+    				if (circle.role === "input" || circle.role === "output") {
+    					return;
     				}
+
+    				// Remove the circle
+    				scene.splice(circleIdx, 1);
+
+    				// Remove any edges connected to this circle
+    				for (let i = scene.length - 1; i >= 0; i--) {
+    					const s = scene[i];
+
+    					if (s.type === "edge" && (s.from === circle || s.to === circle)) {
+    						scene.splice(i, 1);
+    					}
+    				}
+
+    				return;
+    			}
+
+    			// Delete selected edge if no circle deletion
+    			const edgeIdx = scene.findIndex(s => s.type === "edge" && s.selected);
+
+    			if (edgeIdx !== -1) {
+    				scene.splice(edgeIdx, 1);
     			}
     		});
 
     		regl$1.frame(() => {
-    			viewScale += (viewScaleTarget - viewScale) * SMOOTHING;
-    			viewOffset[0] += (viewOffsetTarget[0] - viewOffset[0]) * SMOOTHING;
-    			viewOffset[1] += (viewOffsetTarget[1] - viewOffset[1]) * SMOOTHING;
+    			$$invalidate(8, viewScale += (viewScaleTarget - viewScale) * SMOOTHING);
+    			$$invalidate(9, viewOffset[0] += (viewOffsetTarget[0] - viewOffset[0]) * SMOOTHING, viewOffset);
+    			$$invalidate(9, viewOffset[1] += (viewOffsetTarget[1] - viewOffset[1]) * SMOOTHING, viewOffset);
     			regl$1.clear({ color: [0, 0, 0, 1], depth: 1 });
 
     			// Draw edges with arrow heads
     			scene.forEach(shape => {
-    				if (shape.type === 'edge') {
+    				if (shape.type === "edge") {
     					const p1 = shape.from.center;
     					const p2 = shape.to.center;
 
     					// Highlight if selected
-    					const edgeColor = shape.selected ? [1, 1, 0, 1] : shape.color;
+    					const edgeColor = shape.selected
+    					? [1, 1, 0, 1]
+    					: shape.highlight ? [0, 1, 1, 1] : shape.color;
 
     					// Draw line between circle centers
     					drawLine({ positions: [p1, p2], color: edgeColor });
@@ -11083,16 +11866,103 @@ var app = (function () {
 
     			// Draw circles on top of edges
     			scene.forEach(shape => {
-    				if (shape.type === 'circle') {
+    				if (shape.type === "circle") {
+    					const circleColor = shape.selected
+    					? [1, 1, 0, 1]
+    					: shape.highlight ? [0, 1, 1, 1] : shape.color;
+
     					drawCircle({
     						center: shape.center,
     						radius: shape.radius,
-    						color: shape.selected ? [1, 1, 0, 1] : shape.color
+    						color: circleColor
     					});
     				}
     			});
     		});
     	});
+
+    	let selectedShape = scene.find(s => s.type === "circle" && (s.highlight || s.selected)) || scene.find(s => s.type === "circle" && s.role === "input");
+    	let isRunning = false;
+    	let abort = false;
+
+    	function getPipelineNodes() {
+    		const inputNode = scene.find(s => s.role === "input");
+    		const outputNode = scene.find(s => s.role === "output");
+    		if (!inputNode || !outputNode) return [];
+    		const nodes = [inputNode];
+    		let cur = inputNode;
+    		const seen = new Set([inputNode]);
+
+    		while (cur !== outputNode) {
+    			const edge = scene.find(e => e.type === "edge" && e.from === cur);
+    			if (!edge) break;
+    			const nxt = edge.to;
+    			if (seen.has(nxt)) break;
+    			nodes.push(nxt);
+    			seen.add(nxt);
+    			cur = nxt;
+    		}
+
+    		return cur === outputNode ? nodes : [];
+    	}
+
+    	async function playPipeline() {
+    		if (isRunning) return;
+    		const nodes = getPipelineNodes();
+
+    		if (nodes.length === 0) {
+    			alert("No path from input to output");
+    			return;
+    		}
+
+    		$$invalidate(3, isRunning = true);
+    		abort = false;
+    		let data = scene.find(s => s.role === "input").inputText;
+
+    		for (let i = 0; i < nodes.length && !abort; i++) {
+    			// Clear previous highlights and selections so info follows the play
+    			scene.forEach(s => {
+    				s.highlight = false;
+    				s.selected = false;
+    			});
+
+    			const node = nodes[i];
+    			node.highlight = true;
+
+    			// Trigger reactive update so info panel shows current node
+    			$$invalidate(7, scene = [...scene]);
+
+    			if (i > 0) {
+    				const prev = nodes[i - 1];
+    				const edge = scene.find(e => e.type === "edge" && e.from === prev && e.to === node);
+    				if (edge) edge.highlight = true;
+    			}
+
+    			if (node.role === "default") {
+    				data = await runCommand(node.command, data);
+
+    				// Store and show intermediate output
+    				node.outputText = data;
+
+    				$$invalidate(7, scene = [...scene]);
+    			} else if (node.role === "output") {
+    				node.outputText = data;
+
+    				// Ensure final output stays shown
+    				$$invalidate(7, scene = [...scene]);
+    			}
+
+    			// Delay after output update so user can perceive changes
+    			await new Promise(r => setTimeout(r, 500));
+    		}
+
+    		$$invalidate(3, isRunning = false);
+    	}
+
+    	function stopPipeline() {
+    		abort = true;
+    		$$invalidate(3, isRunning = false);
+    	}
 
     	const writable_props = [];
 
@@ -11107,24 +11977,108 @@ var app = (function () {
     		});
     	}
 
+    	function textarea$_input_handler$() {
+    		selectedShape.inputText = this.value;
+    		(((($$invalidate(2, selectedShape), $$invalidate(0, canvas)), $$invalidate(7, scene)), $$invalidate(8, viewScale)), $$invalidate(9, viewOffset));
+    	}
+
+    	function textarea$_input_handler$_1() {
+    		selectedShape.outputText = this.value;
+    		(((($$invalidate(2, selectedShape), $$invalidate(0, canvas)), $$invalidate(7, scene)), $$invalidate(8, viewScale)), $$invalidate(9, viewOffset));
+    	}
+
+    	function input0$_input_handler$() {
+    		selectedShape.name = this.value;
+    		(((($$invalidate(2, selectedShape), $$invalidate(0, canvas)), $$invalidate(7, scene)), $$invalidate(8, viewScale)), $$invalidate(9, viewOffset));
+    	}
+
+    	function input1$_input_handler$() {
+    		selectedShape.command = this.value;
+    		(((($$invalidate(2, selectedShape), $$invalidate(0, canvas)), $$invalidate(7, scene)), $$invalidate(8, viewScale)), $$invalidate(9, viewOffset));
+    	}
+
+    	function textarea$_input_handler$_2() {
+    		selectedShape.outputText = this.value;
+    		(((($$invalidate(2, selectedShape), $$invalidate(0, canvas)), $$invalidate(7, scene)), $$invalidate(8, viewScale)), $$invalidate(9, viewOffset));
+    	}
+
     	$$self.$capture_state = () => ({
     		reglLib: regl,
     		onMount,
     		canvas,
     		scene,
-    		addCircle
+    		viewScale,
+    		viewOffset,
+    		labels,
+    		addCircle,
+    		selectedShape,
+    		isRunning,
+    		abort,
+    		getPipelineNodes,
+    		runCommand,
+    		playPipeline,
+    		stopPipeline
     	});
 
     	$$self.$inject_state = $$props => {
     		if ('canvas' in $$props) $$invalidate(0, canvas = $$props.canvas);
-    		if ('scene' in $$props) scene = $$props.scene;
+    		if ('scene' in $$props) $$invalidate(7, scene = $$props.scene);
+    		if ('viewScale' in $$props) $$invalidate(8, viewScale = $$props.viewScale);
+    		if ('viewOffset' in $$props) $$invalidate(9, viewOffset = $$props.viewOffset);
+    		if ('labels' in $$props) $$invalidate(1, labels = $$props.labels);
+    		if ('selectedShape' in $$props) $$invalidate(2, selectedShape = $$props.selectedShape);
+    		if ('isRunning' in $$props) $$invalidate(3, isRunning = $$props.isRunning);
+    		if ('abort' in $$props) abort = $$props.abort;
     	};
 
     	if ($$props && "$$inject" in $$props) {
     		$$self.$inject_state($$props.$$inject);
     	}
 
-    	return [canvas, addCircle, canvas$_binding$];
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*canvas, scene, viewScale, viewOffset*/ 897) {
+    			// Update screen-space labels below each node whenever relevant state changes
+    			if (canvas) {
+    				const w = canvas.clientWidth;
+    				const h = canvas.clientHeight;
+
+    				$$invalidate(1, labels = scene.filter(s => s.type === "circle").map(s => {
+    					const xN = s.center[0] * viewScale + viewOffset[0];
+    					const yN = s.center[1] * viewScale + viewOffset[1];
+    					const xPx = (xN + 1) / 2 * w;
+
+    					// Compute pixel radius in Y to place label just below the circle
+    					const pixelRadius = s.radius * viewScale * (h / 2);
+
+    					const margin = 4; // extra spacing below circle
+    					const yPx = (1 - yN) / 2 * h + pixelRadius + margin;
+    					return { x: xPx, y: yPx, name: s.name };
+    				}));
+
+    				// Active shape: prefer highlighted (during play), otherwise selected by user; fallback to input node
+    				$$invalidate(2, selectedShape = scene.find(s => s.type === "circle" && (s.highlight || s.selected)) || scene.find(s => s.type === "circle" && s.role === "input"));
+    			}
+    		}
+    	};
+
+    	return [
+    		canvas,
+    		labels,
+    		selectedShape,
+    		isRunning,
+    		addCircle,
+    		playPipeline,
+    		stopPipeline,
+    		scene,
+    		viewScale,
+    		viewOffset,
+    		canvas$_binding$,
+    		textarea$_input_handler$,
+    		textarea$_input_handler$_1,
+    		input0$_input_handler$,
+    		input1$_input_handler$,
+    		textarea$_input_handler$_2
+    	];
     }
 
     class App$ extends SvelteComponentDev {

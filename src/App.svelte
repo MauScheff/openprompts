@@ -3,13 +3,19 @@
     import { onMount } from "svelte";
 
     let canvas;
+    // Define consistent node colors: same for input/output, same for inner nodes
+    const ioColor = [0.384, 0, 0.933, 1];        // primary (#6200ee)
+    // Accent color for inner nodes (#61afef)
+    const defaultNodeColor = [0.380, 0.686, 0.937, 1]; // secondary (#61afef)
+    // Color used for selected nodes and edges
+    const selectedColor = [0.216, 0, 0.702, 1];  // primary-dark (#3700b3)
     let scene = [
         {
             type: "circle",
             role: "input",
             center: [-0.9, 0],
             radius: 0.1,
-            color: [0, 1, 0, 1],
+            color: ioColor,
             selected: false,
             inputText: "",
             name: "Input",
@@ -20,7 +26,7 @@
             role: "output",
             center: [0.9, 0],
             radius: 0.1,
-            color: [1, 0, 0, 1],
+            color: ioColor,
             selected: false,
             outputText: "",
             name: "Output",
@@ -41,7 +47,7 @@
             command: "",
             center: [Math.random() * 1.8 - 0.9, Math.random() * 1.8 - 0.9],
             radius: 0.1,
-            color: [Math.random(), Math.random(), Math.random(), 1.0],
+            color: defaultNodeColor,
             selected: false,
             highlight: false,
             outputText: "",
@@ -53,10 +59,11 @@
     onMount(() => {
         // Set canvas size and pixel ratio for crisp rendering
         const resizeCanvas = () => {
-            canvas.width = window.innerWidth * window.devicePixelRatio;
-            canvas.height = window.innerHeight * window.devicePixelRatio;
-            canvas.style.width = window.innerWidth + "px";
-            canvas.style.height = window.innerHeight + "px";
+            // Size canvas to its display container (excluding info panel)
+            const width = canvas.clientWidth * window.devicePixelRatio;
+            const height = canvas.clientHeight * window.devicePixelRatio;
+            canvas.width = width;
+            canvas.height = height;
         };
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
@@ -431,7 +438,7 @@
                     const p2 = shape.to.center;
                     // Highlight if selected
                     const edgeColor = shape.selected
-                        ? [1, 1, 0, 1]
+                        ? selectedColor
                         : shape.highlight
                           ? [0, 1, 1, 1]
                           : shape.color;
@@ -477,7 +484,7 @@
             scene.forEach((shape) => {
                 if (shape.type === "circle") {
                     const circleColor = shape.selected
-                        ? [1, 1, 0, 1]
+                        ? selectedColor
                         : shape.highlight
                           ? [0, 1, 1, 1]
                           : shape.color;
@@ -493,7 +500,8 @@
 
     let selectedShape =
         scene.find((s) => s.type === "circle" && (s.highlight || s.selected)) ||
-        scene.find((s) => s.type === "circle" && s.role === "input");
+        // On first load, show output node info
+        scene.find((s) => s.type === "circle" && s.role === "output");
     // Update screen-space labels below each node whenever relevant state changes
     $: if (canvas) {
         const w = canvas.clientWidth;
@@ -510,11 +518,11 @@
                 const yPx = ((1 - yN) / 2) * h + pixelRadius + margin;
                 return { x: xPx, y: yPx, name: s.name };
             });
-        // Active shape: prefer highlighted (during play), otherwise selected by user; fallback to input node
+        // Active shape: prefer highlighted (during play), otherwise selected by user; fallback to output node
         selectedShape =
             scene.find(
                 (s) => s.type === "circle" && (s.highlight || s.selected),
-            ) || scene.find((s) => s.type === "circle" && s.role === "input");
+            ) || scene.find((s) => s.type === "circle" && s.role === "output");
     }
 
     let isRunning = false;
@@ -613,151 +621,194 @@
         abort = true;
         isRunning = false;
     }
-</script>
+  </script>
 
-<canvas bind:this={canvas}></canvas>
-{#each labels as label, i (i)}
-    {#if label.name}
-        <div class="node-label" style="left: {label.x}px; top: {label.y}px;">
-            {label.name}
-        </div>
-    {/if}
-{/each}
-<div class="controls">
-    <button on:click={addCircle}>Add Circle</button>
-    <button on:click={playPipeline} disabled={isRunning}>Play</button>
-    <button on:click={stopPipeline} disabled={!isRunning}>Stop</button>
-</div>
-<div class="info-panel">
-    {#if selectedShape}
+  <div class="app-wrap">
+    <div class="info-panel">
+      {#if selectedShape}
         {#if selectedShape.role === "input"}
-            <h3>Input</h3>
-            <label>Name: {selectedShape.name}</label>
-            <label>Input:</label>
-            <textarea rows="5" bind:value={selectedShape.inputText}></textarea>
+          <h3>Input</h3>
+          <label>Name: {selectedShape.name}</label>
+          <label>Input:</label>
+          <textarea rows="5" bind:value={selectedShape.inputText}></textarea>
         {:else if selectedShape.role === "output"}
-            <h3>Output</h3>
-            <label>Name: {selectedShape.name}</label>
-            <label>Output:</label>
-            <textarea rows="5" readonly bind:value={selectedShape.outputText}
-            ></textarea>
+          <h3>Output</h3>
+          <label>Name: {selectedShape.name}</label>
+          <label>Output:</label>
+          <textarea rows="5" readonly bind:value={selectedShape.outputText}></textarea>
         {:else}
-            <h3>Node</h3>
-            <label>Name: <input bind:value={selectedShape.name} /></label>
-            <label>Command: <input bind:value={selectedShape.command} /></label>
-            <label class="hint"
-                >Use &#123;input&#125; to reference the previous node's output</label
-            >
-            <label>Output:</label>
-            <textarea rows="5" readonly bind:value={selectedShape.outputText}
-            ></textarea>
+          <h3>Node</h3>
+          <label>Name: <input bind:value={selectedShape.name} /></label>
+          <label>Command: <input bind:value={selectedShape.command} /></label>
+          <label class="hint">Use &#123;input&#125; to reference the previous node's output</label>
+          <label>Output:</label>
+          <textarea rows="5" readonly bind:value={selectedShape.outputText}></textarea>
         {/if}
-    {/if}
-</div>
+      {/if}
+    </div>
+
+    <div class="canvas-container">
+      <canvas bind:this={canvas}></canvas>
+      {#each labels as label, i (i)}
+        {#if label.name}
+          <div class="node-label" style="left: {label.x}px; top: {label.y}px;">
+            {label.name}
+          </div>
+        {/if}
+      {/each}
+    </div>
+
+    <div class="controls">
+      <button on:click={addCircle}>Add Circle</button>
+      <button on:click={playPipeline} disabled={isRunning}>Play</button>
+      <button on:click={stopPipeline} disabled={!isRunning}>Stop</button>
+    </div>
+  </div>
 
 <style>
-    html,
-    body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        font-family: Arial, sans-serif;
-        color: #333;
-        background: #f5f5f5;
-    }
-    canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-    }
-    .controls {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 2;
-        display: flex;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.85);
-        padding: 8px;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-    .controls button {
-        background-color: #6200ee;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        padding: 6px 12px;
-        font-size: 0.95em;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-    .controls button:hover:not(:disabled) {
-        background-color: #3700b3;
-    }
-    .controls button:disabled {
-        background-color: #ccc;
-        color: #666;
-        cursor: default;
-    }
-    .info-panel {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 300px;
-        background: #fff;
-        padding: 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border-radius: 8px;
-        max-height: calc(100% - 20px);
-        overflow-y: auto;
-        font-family: Arial, sans-serif;
-        z-index: 3;
-    }
-    .info-panel h3 {
-        margin: 0 0 8px;
-        font-size: 1.2em;
-    }
-    .info-panel label {
-        display: block;
-        margin-bottom: 4px;
-        font-weight: 500;
-        font-size: 0.95em;
-    }
-    .info-panel .hint {
-        font-size: 0.85em;
-        color: #666;
-        font-style: italic;
-        margin-bottom: 8px;
-    }
-    .info-panel input,
-    .info-panel textarea {
-        width: 100%;
-        margin-bottom: 12px;
-        padding: 6px 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 0.95em;
-        font-family: inherit;
-        box-sizing: border-box;
-    }
-    .node-label {
-        position: absolute;
-        transform: translateX(-50%);
-        background: rgba(255, 255, 255, 0.95);
-        color: #222;
-        padding: 4px 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 1em;
-        font-weight: 600;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        white-space: nowrap;
-        pointer-events: none;
-        z-index: 1;
-    }
+  /* Import professional font */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  /* Design system variables */
+  :root {
+    --primary: #6200ee;
+    --primary-dark: #3700b3;
+    --secondary: #61afef;
+    /* Dark background inspired by code editor themes */
+    --bg-light: #282c34;
+    --surface: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --border-radius: 8px;
+    --shadow-elevation: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --transition-duration: 0.3s;
+  }
+  :global(html, body) {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+  :global(body) {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text-primary);
+    background: var(--bg-light);
+  }
+  .app-wrap {
+    display: flex;
+    flex-direction: row-reverse;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  .canvas-container {
+    flex: 1;
+    position: relative;
+  }
+  /* Full-screen canvas */
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+  .controls {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    gap: 12px;
+    background: var(--surface);
+    padding: 12px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-elevation);
+    transition: background var(--transition-duration) ease;
+  }
+  .controls button {
+    background-color: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 8px 16px;
+    font-size: 0.95em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-duration) ease;
+  }
+  .controls button:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+  }
+  .controls button:disabled {
+    background-color: #e0e0e0;
+    color: #999;
+    cursor: default;
+  }
+  .info-panel {
+    /* Static right panel, full height */
+    position: relative;
+    z-index: 3;
+    width: 300px;
+    height: 100%;
+    background: var(--surface);
+    padding: 16px;
+    box-shadow: var(--shadow-elevation);
+    border-radius: var(--border-radius);
+    overflow-y: auto;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .info-panel h3 {
+    margin: 0 0 12px;
+    font-size: 1.3em;
+    color: var(--primary-dark);
+  }
+  .info-panel label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    font-size: 0.95em;
+    color: var(--text-secondary);
+  }
+  .info-panel .hint {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .info-panel input,
+  .info-panel textarea {
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    border: 1px solid var(--text-secondary);
+    border-radius: var(--border-radius);
+    font-size: 0.95em;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color var(--transition-duration) ease;
+  }
+  .info-panel input:focus,
+  .info-panel textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .node-label {
+    position: absolute;
+    transform: translateX(-50%);
+    background: var(--surface);
+    color: var(--text-primary);
+    padding: 6px 12px;
+    border: 1px solid var(--text-secondary);
+    border-radius: var(--border-radius);
+    font-size: 1em;
+    font-weight: 600;
+    box-shadow: var(--shadow-elevation);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 1;
+    transition: transform var(--transition-duration) ease;
+  }
 </style>

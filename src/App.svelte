@@ -1,4 +1,5 @@
 <script>
+    import { Command } from "@tauri-apps/plugin-shell";
     import reglLib from "regl";
     import { onMount } from "svelte";
 
@@ -13,7 +14,7 @@
     const selectedColor = [0.91, 0.12, 0.39, 1];
     // Highlight during pipeline execution: yellow (#FFEB3B)
     const highlightColor = [1, 0.92, 0.23, 1];
-    let scene = [
+    const DEFAULT_SCENE = [
         {
             type: "circle",
             role: "input",
@@ -37,6 +38,42 @@
             highlight: false,
         },
     ];
+    let scene;
+    if (typeof window !== "undefined") {
+        const saved = window.localStorage.getItem("scene");
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                const circles = parsed.filter((s) => s.type === "circle");
+                const edgesRaw = parsed.filter((s) => s.type === "edge");
+                scene = [...circles];
+                edgesRaw.forEach((e) => {
+                    const fromNode = scene.find(
+                        (s) => s.type === "circle" && s.name === e.from.name,
+                    );
+                    const toNode = scene.find(
+                        (s) => s.type === "circle" && s.name === e.to.name,
+                    );
+                    if (fromNode && toNode) {
+                        scene.push({
+                            type: "edge",
+                            from: fromNode,
+                            to: toNode,
+                            color: e.color,
+                            selected: e.selected,
+                            highlight: e.highlight || false,
+                        });
+                    }
+                });
+            } catch (err) {
+                scene = DEFAULT_SCENE;
+            }
+        } else {
+            scene = DEFAULT_SCENE;
+        }
+    } else {
+        scene = DEFAULT_SCENE;
+    }
     // View transform for positioning and zoom
     let viewScale = 1;
     let viewOffset = [0, 0];
@@ -45,10 +82,13 @@
 
     function addCircle() {
         // Determine previous node: last prompt or input if first
-        const prompts = scene.filter(s => s.type === "circle" && s.role === "default");
-        const prev = prompts.length > 0
-            ? prompts[prompts.length - 1]
-            : scene.find(s => s.role === "input");
+        const prompts = scene.filter(
+            (s) => s.type === "circle" && s.role === "default",
+        );
+        const prev =
+            prompts.length > 0
+                ? prompts[prompts.length - 1]
+                : scene.find((s) => s.role === "input");
         // Assign a sequential name
         const index = prompts.length + 1;
         const newNode = {
@@ -76,7 +116,7 @@
             });
         }
         // Remove any existing edge to output, then connect new prompt to output
-        const outputNode = scene.find(s => s.role === "output");
+        const outputNode = scene.find((s) => s.role === "output");
         for (let i = scene.length - 1; i >= 0; i--) {
             const s = scene[i];
             if (s.type === "edge" && s.to === outputNode) {
@@ -93,7 +133,9 @@
             });
         }
         // Select the new prompt node and clear previous selections
-        scene.forEach(s => { s.selected = (s === newNode); });
+        scene.forEach((s) => {
+            s.selected = s === newNode;
+        });
         // Trigger reactivity for scene change
         scene = [...scene];
     }
@@ -497,13 +539,21 @@
                         const r1 = shape.from.radius;
                         const rX1 = r1 * aspect;
                         const rY1 = r1;
-                        const t0 = (rX1 * rY1) / Math.sqrt(ux*ux * rY1*rY1 + uy*uy * rX1*rX1);
+                        const t0 =
+                            (rX1 * rY1) /
+                            Math.sqrt(
+                                ux * ux * rY1 * rY1 + uy * uy * rX1 * rX1,
+                            );
                         const start = [p1[0] + ux * t0, p1[1] + uy * t0];
                         // Target circle boundary
                         const r2 = shape.to.radius;
                         const rX2 = r2 * aspect;
                         const rY2 = r2;
-                        const t1 = (rX2 * rY2) / Math.sqrt(ux*ux * rY2*rY2 + uy*uy * rX2*rX2);
+                        const t1 =
+                            (rX2 * rY2) /
+                            Math.sqrt(
+                                ux * ux * rY2 * rY2 + uy * uy * rX2 * rX2,
+                            );
                         const end = [p2[0] - ux * t1, p2[1] - uy * t1];
                         // Draw clipped line
                         drawLine({ positions: [start, end], color: edgeColor });
@@ -514,8 +564,14 @@
                         const baseY = end[1] - uy * arrowLen;
                         const px = -uy;
                         const py = ux;
-                        const left = [baseX + px * arrowWid, baseY + py * arrowWid];
-                        const right = [baseX - px * arrowWid, baseY - py * arrowWid];
+                        const left = [
+                            baseX + px * arrowWid,
+                            baseY + py * arrowWid,
+                        ];
+                        const right = [
+                            baseX - px * arrowWid,
+                            baseY - py * arrowWid,
+                        ];
                         drawTriangle({
                             positions: [[end[0], end[1]], left, right],
                             color: edgeColor,
@@ -608,31 +664,49 @@
         return cur === outputNode ? nodes : [];
     }
 
-    async function runCommand(cmd, input) {
-        // If no command provided, do not forward input by default
-        if (!cmd) return "";
-        // Replace template variable {input} with actual data
-        const expanded = cmd.replace(/{input}/g, input);
-        const parts = expanded.trim().split(" ");
-        const name = parts[0].toLowerCase();
-        if (name === "curl" && parts[1]) {
-            try {
-                const res = await fetch(parts[1]);
-                return await res.text();
-            } catch (e) {
-                return `Error fetching ${parts[1]}: ${e.message}`;
-            }
-        } else if (name === "uppercase") {
-            return input.toUpperCase();
-        } else if (name === "lowercase") {
-            return input.toLowerCase();
-        } else if (name === "echo") {
-            // Prototype basic shell 'echo': return concatenated arguments
-            return parts.slice(1).join(" ");
+    async function runCommand(input) {
+        try {
+            const output = await Command.create("exec-sh", [
+                "-c",
+                input,
+            ]).execute();
+            return output.stdout;
+        } catch (e) {
+            console.error("Shell command error:", e);
+            return `Error executing command: ${e.message}`;
         }
-        // Fallback: return the expanded command string
-        return "";
     }
+
+    // async function runCommand(cmd, input) {
+    //     // If no command provided, do not forward input by default
+    //     if (!cmd) return "";
+    //     // Replace template variable {input} with actual data
+    //     const expanded = cmd.replace(/{input}/g, input);
+    //     // Helper to invoke Tauri backend if available
+    //     async function invokeTauri(command) {
+    //         try {
+    //             const { invoke: tauriInvoke } = await import(
+    //                 "@tauri-apps/api/tauri"
+    //             );
+    //             return await tauriInvoke("run_command", { cmd: command });
+    //         } catch (e) {
+    //             return `Error executing command: ${e}`;
+    //         }
+    //     }
+    //     // If the command uses shell features (e.g. multiple commands), delegate to backend shell
+
+    //     // Fallback: run command via backend shell
+    //     try {
+    //         const { invoke: tauriInvoke } = await import(
+    //             "@tauri-apps/api/tauri"
+    //         );
+    //         return await tauriInvoke("run_command", { cmd: expanded });
+    //     } catch (e) {
+    //         console.error("Error invoking Tauri command:", e);
+    //     }
+
+    //     return "Simulating: " + expanded;
+    // }
 
     async function playPipeline() {
         if (isRunning) return;
@@ -663,7 +737,11 @@
                 if (edge) edge.highlight = true;
             }
             if (node.role === "default") {
-                data = await runCommand(node.command, data);
+                // Replace template variable {input} with output from previous node
+                const cmd = node.command.replace(/\{input\}/g, data);
+                console.log(`Running command on node ${node.name}: ${cmd}`);
+                data = await runCommand(cmd);
+                console.log("Command output:", data);
                 // Store and show intermediate output
                 node.outputText = data;
                 scene = [...scene];
@@ -682,194 +760,225 @@
         abort = true;
         isRunning = false;
     }
-  </script>
+    $: if (typeof window !== "undefined") {
+        window.localStorage.setItem("scene", JSON.stringify(scene));
+    }
+</script>
 
-  <div class="app-wrap">
+<div class="app-wrap">
     <div class="info-panel">
-      {#if selectedShape}
-        {#if selectedShape.role === "input"}
-          <h3>Input</h3>
-          <label>Name: {selectedShape.name}</label>
-          <label>Input:</label>
-          <textarea rows="5" bind:value={selectedShape.inputText}></textarea>
-        {:else if selectedShape.role === "output"}
-          <h3>Output</h3>
-          <label>Name: {selectedShape.name}</label>
-          <label>Output:</label>
-          <textarea rows="5" readonly bind:value={selectedShape.outputText}></textarea>
-        {:else}
-          <h3>Prompt</h3>
-          <label>Name: <input bind:value={selectedShape.name} /></label>
-          <label>Prompt: <input bind:value={selectedShape.command} /></label>
-          <label class="hint">Use &#123;input&#125; to reference the previous node's output</label>
-          <label>Output:</label>
-          <textarea rows="5" readonly bind:value={selectedShape.outputText}></textarea>
+        {#if selectedShape}
+            {#if selectedShape.role === "input"}
+                <h3>Input</h3>
+                <label>Name: {selectedShape.name}</label>
+                <label>Input:</label>
+                <textarea rows="5" bind:value={selectedShape.inputText}
+                ></textarea>
+            {:else if selectedShape.role === "output"}
+                <h3>Output</h3>
+                <label>Name: {selectedShape.name}</label>
+                <label>Output:</label>
+                <textarea
+                    rows="20"
+                    readonly
+                    bind:value={selectedShape.outputText}
+                ></textarea>
+            {:else}
+                <h3>Prompt</h3>
+                <label>Name: <input bind:value={selectedShape.name} /></label>
+                <label
+                    >Prompt: <input bind:value={selectedShape.command} /></label
+                >
+                <label class="hint"
+                    >Use &#123;input&#125; to reference the previous node's
+                    output</label
+                >
+                <label>Output:</label>
+                <textarea
+                    rows="20"
+                    readonly
+                    bind:value={selectedShape.outputText}
+                ></textarea>
+            {/if}
         {/if}
-      {/if}
     </div>
 
     <div class="canvas-container">
-      <canvas bind:this={canvas}></canvas>
-      {#each labels as label, i (i)}
-        {#if label.name}
-          <div class="node-label" style="left: {label.x}px; top: {label.y}px;">
-            {label.name}
-          </div>
-        {/if}
-      {/each}
+        <canvas bind:this={canvas}></canvas>
+        {#each labels as label, i (i)}
+            {#if label.name}
+                <div
+                    class="node-label"
+                    style="left: {label.x}px; top: {label.y}px;"
+                >
+                    {label.name}
+                </div>
+            {/if}
+        {/each}
     </div>
 
     <div class="controls">
-      <button on:click={addCircle}>Add Step</button>
-      <button on:click={playPipeline} disabled={isRunning}>Play</button>
-      <button on:click={stopPipeline} disabled={!isRunning}>Stop</button>
+        <button on:click={addCircle}>Add Step</button>
+        <button on:click={playPipeline} disabled={isRunning}>Play</button>
+        <button on:click={stopPipeline} disabled={!isRunning}>Stop</button>
     </div>
-  </div>
+</div>
 
 <style>
-  /* Import professional font */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-  /* Design system variables */
-  :root {
-    --primary: #6200ee;
-    --primary-dark: #3700b3;
-    --secondary: #61afef;
-    /* Warm dark grey background (like Figma) */
-    --bg-light: #2e2e2e;
-    --surface: #ffffff;
-    --text-primary: #333333;
-    --text-secondary: #666666;
-    --border-radius: 8px;
-    --shadow-elevation: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --transition-duration: 0.3s;
-  }
-  :global(html, body) {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-  }
-  :global(body) {
-    font-family: 'Inter', system-ui, sans-serif;
-    color: var(--text-primary);
-    background: var(--bg-light);
-  }
-  .app-wrap {
-    display: flex;
-    flex-direction: row-reverse;
-    width: 100%;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-  }
-  .canvas-container {
-    flex: 1;
-    position: relative;
-  }
-  /* Full-screen canvas */
-  canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-  }
-  .controls {
-    position: absolute;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    display: flex;
-    gap: 12px;
-    background: var(--surface);
-    padding: 12px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-elevation);
-    transition: background var(--transition-duration) ease;
-  }
-  .controls button {
-    background-color: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: var(--border-radius);
-    padding: 8px 16px;
-    font-size: 0.95em;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color var(--transition-duration) ease;
-  }
-  .controls button:hover:not(:disabled) {
-    background-color: var(--primary-dark);
-  }
-  .controls button:disabled {
-    background-color: #e0e0e0;
-    color: #999;
-    cursor: default;
-  }
-  .info-panel {
-    /* Static right panel, full height */
-    position: relative;
-    z-index: 3;
-    width: 300px;
-    height: 100%;
-    background: var(--surface);
-    padding: 16px;
-    box-shadow: var(--shadow-elevation);
-    /* border-radius: var(--border-radius); */
-    overflow-y: auto;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  .info-panel h3 {
-    margin: 0 0 12px;
-    font-size: 1.3em;
-    color: var(--primary-dark);
-  }
-  .info-panel label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    font-size: 0.95em;
-    color: var(--text-secondary);
-  }
-  .info-panel .hint {
-    font-size: 0.85em;
-    color: var(--text-secondary);
-    font-style: italic;
-    margin-bottom: 10px;
-  }
-  .info-panel input,
-  .info-panel textarea {
-    width: 100%;
-    margin-bottom: 14px;
-    padding: 8px 10px;
-    border: 1px solid var(--text-secondary);
-    border-radius: var(--border-radius);
-    font-size: 0.95em;
-    font-family: inherit;
-    box-sizing: border-box;
-    transition: border-color var(--transition-duration) ease;
-  }
-  .info-panel input:focus,
-  .info-panel textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-  }
-  .node-label {
-    position: absolute;
-    transform: translateX(-50%);
-    background: var(--surface);
-    color: var(--text-primary);
-    padding: 6px 12px;
-    border: 1px solid var(--text-secondary);
-    border-radius: var(--border-radius);
-    font-size: 1em;
-    font-weight: 600;
-    box-shadow: var(--shadow-elevation);
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 1;
-    transition: transform var(--transition-duration) ease;
-  }
+    /* Import professional font */
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+    /* Design system variables */
+    :root {
+        --primary: #6200ee;
+        --primary-dark: #3700b3;
+        --secondary: #61afef;
+        /* Warm dark grey background (like Figma) */
+        --bg-light: #2e2e2e;
+        --surface: #ffffff;
+        --text-primary: #333333;
+        --text-secondary: #666666;
+        --border-radius: 8px;
+        --shadow-elevation: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --transition-duration: 0.3s;
+    }
+    :global(html, body) {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+    :global(body) {
+        font-family: "Inter", system-ui, sans-serif;
+        color: var(--text-primary);
+        background: var(--bg-light);
+    }
+    .app-wrap {
+        display: flex;
+        flex-direction: row-reverse;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    .canvas-container {
+        flex: 1;
+        position: relative;
+    }
+    /* Full-screen canvas */
+    canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+    .controls {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2;
+        display: flex;
+        gap: 12px;
+        background: var(--surface);
+        padding: 12px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-elevation);
+        transition: background var(--transition-duration) ease;
+    }
+    .controls button {
+        background-color: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 8px 16px;
+        font-size: 0.95em;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color var(--transition-duration) ease;
+    }
+    .controls button:hover:not(:disabled) {
+        background-color: var(--primary-dark);
+    }
+    .controls button:disabled {
+        background-color: #e0e0e0;
+        color: #999;
+        cursor: default;
+    }
+    .info-panel {
+        /* Static right panel, full height */
+        position: relative;
+        z-index: 3;
+        width: 350px;
+        height: 100%;
+        background: var(--surface);
+        padding: 16px;
+        box-shadow: var(--shadow-elevation);
+        /* border-radius: var(--border-radius); */
+        overflow-y: auto;
+        font-family: "Inter", system-ui, sans-serif;
+    }
+    .info-panel h3 {
+        margin: 0 0 12px;
+        font-size: 1.3em;
+        color: var(--primary-dark);
+    }
+    .info-panel label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        font-size: 0.95em;
+        color: var(--text-secondary);
+    }
+    .info-panel .hint {
+        font-size: 0.85em;
+        color: var(--text-secondary);
+        font-style: italic;
+        margin-bottom: 10px;
+    }
+    .info-panel input,
+    .info-panel textarea {
+        width: 100%;
+        margin-bottom: 14px;
+        padding: 8px 10px;
+        border: 1px solid var(--text-secondary);
+        border-radius: var(--border-radius);
+        font-size: 0.95em;
+        font-family: inherit;
+        box-sizing: border-box;
+        transition: border-color var(--transition-duration) ease;
+    }
+    .info-panel input:focus,
+    .info-panel textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+    }
+    .node-label {
+        position: absolute;
+        transform: translateX(-50%);
+        background: var(--surface);
+        color: var(--text-primary);
+        padding: 6px 12px;
+        border: 1px solid var(--text-secondary);
+        border-radius: var(--border-radius);
+        font-size: 1em;
+        font-weight: 600;
+        box-shadow: var(--shadow-elevation);
+        white-space: nowrap;
+        pointer-events: none;
+        z-index: 1;
+        transition: transform var(--transition-duration) ease;
+    }
+    /* Enhanced styling for output areas to improve readability */
+    .info-panel textarea[readonly] {
+        background: #1e1e1e;
+        color: #f8f8f2;
+        font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        font-size: 0.9em;
+        line-height: 1.4;
+        min-height: 350px;
+        white-space: pre-wrap;
+        overflow: auto;
+    }
 </style>

@@ -1,5 +1,5 @@
 
-(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
+(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35739/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
 var app = (function () {
     'use strict';
 
@@ -528,6 +528,600 @@ var app = (function () {
         }
         $capture_state() { }
         $inject_state() { }
+    }
+
+    /******************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
+
+
+    function __classPrivateFieldGet(receiver, state, kind, f) {
+        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+        return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+    }
+
+    function __classPrivateFieldSet(receiver, state, value, kind, f) {
+        if (kind === "m") throw new TypeError("Private method is not writable");
+        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+        return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+    }
+
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
+    // Copyright 2019-2024 Tauri Programme within The Commons Conservancy
+    // SPDX-License-Identifier: Apache-2.0
+    // SPDX-License-Identifier: MIT
+    var _Channel_onmessage, _Channel_nextMessageIndex, _Channel_pendingMessages, _Channel_messageEndIndex;
+    /**
+     * Invoke your custom commands.
+     *
+     * This package is also accessible with `window.__TAURI__.core` when [`app.withGlobalTauri`](https://v2.tauri.app/reference/config/#withglobaltauri) in `tauri.conf.json` is set to `true`.
+     * @module
+     */
+    /**
+     * A key to be used to implement a special function
+     * on your types that define how your type should be serialized
+     * when passing across the IPC.
+     * @example
+     * Given a type in Rust that looks like this
+     * ```rs
+     * #[derive(serde::Serialize, serde::Deserialize)
+     * enum UserId {
+     *   String(String),
+     *   Number(u32),
+     * }
+     * ```
+     * `UserId::String("id")` would be serialized into `{ String: "id" }`
+     * and so we need to pass the same structure back to Rust
+     * ```ts
+     * import { SERIALIZE_TO_IPC_FN } from "@tauri-apps/api/core"
+     *
+     * class UserIdString {
+     *   id
+     *   constructor(id) {
+     *     this.id = id
+     *   }
+     *
+     *   [SERIALIZE_TO_IPC_FN]() {
+     *     return { String: this.id }
+     *   }
+     * }
+     *
+     * class UserIdNumber {
+     *   id
+     *   constructor(id) {
+     *     this.id = id
+     *   }
+     *
+     *   [SERIALIZE_TO_IPC_FN]() {
+     *     return { Number: this.id }
+     *   }
+     * }
+     *
+     * type UserId = UserIdString | UserIdNumber
+     * ```
+     *
+     */
+    // if this value changes, make sure to update it in:
+    // 1. ipc.js
+    // 2. process-ipc-message-fn.js
+    const SERIALIZE_TO_IPC_FN = '__TAURI_TO_IPC_KEY__';
+    /**
+     * Transforms a callback function to a string identifier that can be passed to the backend.
+     * The backend uses the identifier to `eval()` the callback.
+     *
+     * @return A unique identifier associated with the callback function.
+     *
+     * @since 1.0.0
+     */
+    function transformCallback(callback, once = false) {
+        return window.__TAURI_INTERNALS__.transformCallback(callback, once);
+    }
+    class Channel {
+        constructor(onmessage) {
+            _Channel_onmessage.set(this, void 0);
+            // the index is used as a mechanism to preserve message order
+            _Channel_nextMessageIndex.set(this, 0);
+            _Channel_pendingMessages.set(this, []);
+            _Channel_messageEndIndex.set(this, void 0);
+            __classPrivateFieldSet(this, _Channel_onmessage, onmessage || (() => { }), "f");
+            this.id = transformCallback((rawMessage) => {
+                const index = rawMessage.index;
+                if ('end' in rawMessage) {
+                    if (index == __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")) {
+                        this.cleanupCallback();
+                    }
+                    else {
+                        __classPrivateFieldSet(this, _Channel_messageEndIndex, index, "f");
+                    }
+                    return;
+                }
+                const message = rawMessage.message;
+                // Process the message if we're at the right order
+                if (index == __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")) {
+                    __classPrivateFieldGet(this, _Channel_onmessage, "f").call(this, message);
+                    __classPrivateFieldSet(this, _Channel_nextMessageIndex, __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") + 1, "f");
+                    // process pending messages
+                    while (__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") in __classPrivateFieldGet(this, _Channel_pendingMessages, "f")) {
+                        const message = __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")];
+                        __classPrivateFieldGet(this, _Channel_onmessage, "f").call(this, message);
+                        // eslint-disable-next-line @typescript-eslint/no-array-delete
+                        delete __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")];
+                        __classPrivateFieldSet(this, _Channel_nextMessageIndex, __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") + 1, "f");
+                    }
+                    if (__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") === __classPrivateFieldGet(this, _Channel_messageEndIndex, "f")) {
+                        this.cleanupCallback();
+                    }
+                }
+                // Queue the message if we're not
+                else {
+                    // eslint-disable-next-line security/detect-object-injection
+                    __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[index] = message;
+                }
+            });
+        }
+        cleanupCallback() {
+            Reflect.deleteProperty(window, `_${this.id}`);
+        }
+        set onmessage(handler) {
+            __classPrivateFieldSet(this, _Channel_onmessage, handler, "f");
+        }
+        get onmessage() {
+            return __classPrivateFieldGet(this, _Channel_onmessage, "f");
+        }
+        [(_Channel_onmessage = new WeakMap(), _Channel_nextMessageIndex = new WeakMap(), _Channel_pendingMessages = new WeakMap(), _Channel_messageEndIndex = new WeakMap(), SERIALIZE_TO_IPC_FN)]() {
+            return `__CHANNEL__:${this.id}`;
+        }
+        toJSON() {
+            // eslint-disable-next-line security/detect-object-injection
+            return this[SERIALIZE_TO_IPC_FN]();
+        }
+    }
+    /**
+     * Sends a message to the backend.
+     * @example
+     * ```typescript
+     * import { invoke } from '@tauri-apps/api/core';
+     * await invoke('login', { user: 'tauri', password: 'poiwe3h4r5ip3yrhtew9ty' });
+     * ```
+     *
+     * @param cmd The command name.
+     * @param args The optional arguments to pass to the command.
+     * @param options The request options.
+     * @return A promise resolving or rejecting to the backend response.
+     *
+     * @since 1.0.0
+     */
+    async function invoke(cmd, args = {}, options) {
+        return window.__TAURI_INTERNALS__.invoke(cmd, args, options);
+    }
+
+    // Copyright 2019-2023 Tauri Programme within The Commons Conservancy
+    // SPDX-License-Identifier: Apache-2.0
+    // SPDX-License-Identifier: MIT
+    /**
+     * Access the system shell.
+     * Allows you to spawn child processes and manage files and URLs using their default application.
+     *
+     * ## Security
+     *
+     * This API has a scope configuration that forces you to restrict the programs and arguments that can be used.
+     *
+     * ### Restricting access to the {@link open | `open`} API
+     *
+     * On the configuration object, `open: true` means that the {@link open} API can be used with any URL,
+     * as the argument is validated with the `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+` regex.
+     * You can change that regex by changing the boolean value to a string, e.g. `open: ^https://github.com/`.
+     *
+     * ### Restricting access to the {@link Command | `Command`} APIs
+     *
+     * The plugin permissions object has a `scope` field that defines an array of CLIs that can be used.
+     * Each CLI is a configuration object `{ name: string, cmd: string, sidecar?: bool, args?: boolean | Arg[] }`.
+     *
+     * - `name`: the unique identifier of the command, passed to the {@link Command.create | Command.create function}.
+     * If it's a sidecar, this must be the value defined on `tauri.conf.json > bundle > externalBin`.
+     * - `cmd`: the program that is executed on this configuration. If it's a sidecar, this value is ignored.
+     * - `sidecar`: whether the object configures a sidecar or a system program.
+     * - `args`: the arguments that can be passed to the program. By default no arguments are allowed.
+     *   - `true` means that any argument list is allowed.
+     *   - `false` means that no arguments are allowed.
+     *   - otherwise an array can be configured. Each item is either a string representing the fixed argument value
+     *     or a `{ validator: string }` that defines a regex validating the argument value.
+     *
+     * #### Example scope configuration
+     *
+     * CLI: `git commit -m "the commit message"`
+     *
+     * Capability:
+     * ```json
+     * {
+     *   "permissions": [
+     *     {
+     *       "identifier": "shell:allow-execute",
+     *       "allow": [
+     *         {
+     *           "name": "run-git-commit",
+     *           "cmd": "git",
+     *           "args": ["commit", "-m", { "validator": "\\S+" }]
+     *         }
+     *       ]
+     *     }
+     *   ]
+     * }
+     * ```
+     * Usage:
+     * ```typescript
+     * import { Command } from '@tauri-apps/plugin-shell'
+     * Command.create('run-git-commit', ['commit', '-m', 'the commit message'])
+     * ```
+     *
+     * Trying to execute any API with a program not configured on the scope results in a promise rejection due to denied access.
+     *
+     * @module
+     */
+    /**
+     * @since 2.0.0
+     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    class EventEmitter {
+        constructor() {
+            /** @ignore */
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+            this.eventListeners = Object.create(null);
+        }
+        /**
+         * Alias for `emitter.on(eventName, listener)`.
+         *
+         * @since 2.0.0
+         */
+        addListener(eventName, listener) {
+            return this.on(eventName, listener);
+        }
+        /**
+         * Alias for `emitter.off(eventName, listener)`.
+         *
+         * @since 2.0.0
+         */
+        removeListener(eventName, listener) {
+            return this.off(eventName, listener);
+        }
+        /**
+         * Adds the `listener` function to the end of the listeners array for the
+         * event named `eventName`. No checks are made to see if the `listener` has
+         * already been added. Multiple calls passing the same combination of `eventName`and `listener` will result in the `listener` being added, and called, multiple
+         * times.
+         *
+         * Returns a reference to the `EventEmitter`, so that calls can be chained.
+         *
+         * @since 2.0.0
+         */
+        on(eventName, listener) {
+            if (eventName in this.eventListeners) {
+                // eslint-disable-next-line security/detect-object-injection
+                this.eventListeners[eventName].push(listener);
+            }
+            else {
+                // eslint-disable-next-line security/detect-object-injection
+                this.eventListeners[eventName] = [listener];
+            }
+            return this;
+        }
+        /**
+         * Adds a **one-time**`listener` function for the event named `eventName`. The
+         * next time `eventName` is triggered, this listener is removed and then invoked.
+         *
+         * Returns a reference to the `EventEmitter`, so that calls can be chained.
+         *
+         * @since 2.0.0
+         */
+        once(eventName, listener) {
+            const wrapper = (arg) => {
+                this.removeListener(eventName, wrapper);
+                listener(arg);
+            };
+            return this.addListener(eventName, wrapper);
+        }
+        /**
+         * Removes the all specified listener from the listener array for the event eventName
+         * Returns a reference to the `EventEmitter`, so that calls can be chained.
+         *
+         * @since 2.0.0
+         */
+        off(eventName, listener) {
+            if (eventName in this.eventListeners) {
+                // eslint-disable-next-line security/detect-object-injection
+                this.eventListeners[eventName] = this.eventListeners[eventName].filter((l) => l !== listener);
+            }
+            return this;
+        }
+        /**
+         * Removes all listeners, or those of the specified eventName.
+         *
+         * Returns a reference to the `EventEmitter`, so that calls can be chained.
+         *
+         * @since 2.0.0
+         */
+        removeAllListeners(event) {
+            if (event) {
+                // eslint-disable-next-line security/detect-object-injection
+                delete this.eventListeners[event];
+            }
+            else {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                this.eventListeners = Object.create(null);
+            }
+            return this;
+        }
+        /**
+         * @ignore
+         * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
+         * to each.
+         *
+         * @returns `true` if the event had listeners, `false` otherwise.
+         *
+         * @since 2.0.0
+         */
+        emit(eventName, arg) {
+            if (eventName in this.eventListeners) {
+                // eslint-disable-next-line security/detect-object-injection
+                const listeners = this.eventListeners[eventName];
+                for (const listener of listeners)
+                    listener(arg);
+                return true;
+            }
+            return false;
+        }
+        /**
+         * Returns the number of listeners listening to the event named `eventName`.
+         *
+         * @since 2.0.0
+         */
+        listenerCount(eventName) {
+            if (eventName in this.eventListeners)
+                // eslint-disable-next-line security/detect-object-injection
+                return this.eventListeners[eventName].length;
+            return 0;
+        }
+        /**
+         * Adds the `listener` function to the _beginning_ of the listeners array for the
+         * event named `eventName`. No checks are made to see if the `listener` has
+         * already been added. Multiple calls passing the same combination of `eventName`and `listener` will result in the `listener` being added, and called, multiple
+         * times.
+         *
+         * Returns a reference to the `EventEmitter`, so that calls can be chained.
+         *
+         * @since 2.0.0
+         */
+        prependListener(eventName, listener) {
+            if (eventName in this.eventListeners) {
+                // eslint-disable-next-line security/detect-object-injection
+                this.eventListeners[eventName].unshift(listener);
+            }
+            else {
+                // eslint-disable-next-line security/detect-object-injection
+                this.eventListeners[eventName] = [listener];
+            }
+            return this;
+        }
+        /**
+         * Adds a **one-time**`listener` function for the event named `eventName` to the_beginning_ of the listeners array. The next time `eventName` is triggered, this
+         * listener is removed, and then invoked.
+         *
+         * Returns a reference to the `EventEmitter`, so that calls can be chained.
+         *
+         * @since 2.0.0
+         */
+        prependOnceListener(eventName, listener) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const wrapper = (arg) => {
+                this.removeListener(eventName, wrapper);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                listener(arg);
+            };
+            return this.prependListener(eventName, wrapper);
+        }
+    }
+    /**
+     * @since 2.0.0
+     */
+    class Child {
+        constructor(pid) {
+            this.pid = pid;
+        }
+        /**
+         * Writes `data` to the `stdin`.
+         *
+         * @param data The message to write, either a string or a byte array.
+         * @example
+         * ```typescript
+         * import { Command } from '@tauri-apps/plugin-shell';
+         * const command = Command.create('node');
+         * const child = await command.spawn();
+         * await child.write('message');
+         * await child.write([0, 1, 2, 3, 4, 5]);
+         * ```
+         *
+         * @returns A promise indicating the success or failure of the operation.
+         *
+         * @since 2.0.0
+         */
+        async write(data) {
+            await invoke('plugin:shell|stdin_write', {
+                pid: this.pid,
+                buffer: data
+            });
+        }
+        /**
+         * Kills the child process.
+         *
+         * @returns A promise indicating the success or failure of the operation.
+         *
+         * @since 2.0.0
+         */
+        async kill() {
+            await invoke('plugin:shell|kill', {
+                cmd: 'killChild',
+                pid: this.pid
+            });
+        }
+    }
+    /**
+     * The entry point for spawning child processes.
+     * It emits the `close` and `error` events.
+     * @example
+     * ```typescript
+     * import { Command } from '@tauri-apps/plugin-shell';
+     * const command = Command.create('node');
+     * command.on('close', data => {
+     *   console.log(`command finished with code ${data.code} and signal ${data.signal}`)
+     * });
+     * command.on('error', error => console.error(`command error: "${error}"`));
+     * command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
+     * command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
+     *
+     * const child = await command.spawn();
+     * console.log('pid:', child.pid);
+     * ```
+     *
+     * @since 2.0.0
+     *
+     */
+    class Command extends EventEmitter {
+        /**
+         * @ignore
+         * Creates a new `Command` instance.
+         *
+         * @param program The program name to execute.
+         * It must be configured on `tauri.conf.json > plugins > shell > scope`.
+         * @param args Program arguments.
+         * @param options Spawn options.
+         */
+        constructor(program, args = [], options) {
+            super();
+            /** Event emitter for the `stdout`. Emits the `data` event. */
+            this.stdout = new EventEmitter();
+            /** Event emitter for the `stderr`. Emits the `data` event. */
+            this.stderr = new EventEmitter();
+            this.program = program;
+            this.args = typeof args === 'string' ? [args] : args;
+            this.options = options ?? {};
+        }
+        /**
+         * Creates a command to execute the given program.
+         * @example
+         * ```typescript
+         * import { Command } from '@tauri-apps/plugin-shell';
+         * const command = Command.create('my-app', ['run', 'tauri']);
+         * const output = await command.execute();
+         * ```
+         *
+         * @param program The program to execute.
+         * It must be configured on `tauri.conf.json > plugins > shell > scope`.
+         */
+        static create(program, args = [], options) {
+            return new Command(program, args, options);
+        }
+        /**
+         * Creates a command to execute the given sidecar program.
+         * @example
+         * ```typescript
+         * import { Command } from '@tauri-apps/plugin-shell';
+         * const command = Command.sidecar('my-sidecar');
+         * const output = await command.execute();
+         * ```
+         *
+         * @param program The program to execute.
+         * It must be configured on `tauri.conf.json > plugins > shell > scope`.
+         */
+        static sidecar(program, args = [], options) {
+            const instance = new Command(program, args, options);
+            instance.options.sidecar = true;
+            return instance;
+        }
+        /**
+         * Executes the command as a child process, returning a handle to it.
+         *
+         * @returns A promise resolving to the child process handle.
+         *
+         * @since 2.0.0
+         */
+        async spawn() {
+            const program = this.program;
+            const args = this.args;
+            const options = this.options;
+            if (typeof args === 'object') {
+                Object.freeze(args);
+            }
+            const onEvent = new Channel();
+            onEvent.onmessage = (event) => {
+                switch (event.event) {
+                    case 'Error':
+                        this.emit('error', event.payload);
+                        break;
+                    case 'Terminated':
+                        this.emit('close', event.payload);
+                        break;
+                    case 'Stdout':
+                        this.stdout.emit('data', event.payload);
+                        break;
+                    case 'Stderr':
+                        this.stderr.emit('data', event.payload);
+                        break;
+                }
+            };
+            return await invoke('plugin:shell|spawn', {
+                program,
+                args,
+                options,
+                onEvent
+            }).then((pid) => new Child(pid));
+        }
+        /**
+         * Executes the command as a child process, waiting for it to finish and collecting all of its output.
+         * @example
+         * ```typescript
+         * import { Command } from '@tauri-apps/plugin-shell';
+         * const output = await Command.create('echo', 'message').execute();
+         * assert(output.code === 0);
+         * assert(output.signal === null);
+         * assert(output.stdout === 'message');
+         * assert(output.stderr === '');
+         * ```
+         *
+         * @returns A promise resolving to the child process output.
+         *
+         * @since 2.0.0
+         */
+        async execute() {
+            const program = this.program;
+            const args = this.args;
+            const options = this.options;
+            if (typeof args === 'object') {
+                Object.freeze(args);
+            }
+            return await invoke('plugin:shell|execute', {
+                program,
+                args,
+                options
+            });
+        }
     }
 
     var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -10750,12 +11344,12 @@ var app = (function () {
 
     function get_each_context$(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[22] = list[i];
-    	child_ctx[24] = i;
+    	child_ctx[24] = list[i];
+    	child_ctx[26] = i;
     	return child_ctx;
     }
 
-    // (689:6) {#if selectedShape}
+    // (770:8) {#if selectedShape}
     function create_if_block$_1(ctx) {
     	let if_block$_anchor$;
 
@@ -10800,14 +11394,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(689:6) {#if selectedShape}",
+    		source: "(770:8) {#if selectedShape}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (700:8) {:else}
+    // (786:12) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -10841,30 +11435,30 @@ var app = (function () {
     			input1$ = element("input");
     			t5$ = space();
     			label2$ = element("label");
-    			label2$.textContent = "Use {input} to reference the previous node's output";
+    			label2$.textContent = "Use {input} to reference the previous node's\n                    output";
     			t7$ = space();
     			label3$ = element("label");
     			label3$.textContent = "Output:";
     			t9$ = space();
     			textarea$ = element("textarea");
-    			attr_dev(h3$, "class", "svelte-1gnnuv");
-    			add_location(h3$, file$, 700, 10, 28273);
-    			attr_dev(input0$, "class", "svelte-1gnnuv");
-    			add_location(input0$, file$, 701, 23, 28312);
-    			attr_dev(label0$, "class", "svelte-1gnnuv");
-    			add_location(label0$, file$, 701, 10, 28299);
-    			attr_dev(input1$, "class", "svelte-1gnnuv");
-    			add_location(input1$, file$, 702, 25, 28387);
-    			attr_dev(label1$, "class", "svelte-1gnnuv");
-    			add_location(label1$, file$, 702, 10, 28372);
-    			attr_dev(label2$, "class", "hint svelte-1gnnuv");
-    			add_location(label2$, file$, 703, 10, 28450);
-    			attr_dev(label3$, "class", "svelte-1gnnuv");
-    			add_location(label3$, file$, 704, 10, 28550);
-    			attr_dev(textarea$, "rows", "5");
+    			attr_dev(h3$, "class", "svelte-101uug8");
+    			add_location(h3$, file$, 786, 16, 31337);
+    			attr_dev(input0$, "class", "svelte-101uug8");
+    			add_location(input0$, file$, 787, 29, 31382);
+    			attr_dev(label0$, "class", "svelte-101uug8");
+    			add_location(label0$, file$, 787, 16, 31369);
+    			attr_dev(input1$, "class", "svelte-101uug8");
+    			add_location(input1$, file$, 789, 29, 31484);
+    			attr_dev(label1$, "class", "svelte-101uug8");
+    			add_location(label1$, file$, 788, 16, 31448);
+    			attr_dev(label2$, "class", "hint svelte-101uug8");
+    			add_location(label2$, file$, 791, 16, 31570);
+    			attr_dev(label3$, "class", "svelte-101uug8");
+    			add_location(label3$, file$, 795, 16, 31734);
+    			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
-    			attr_dev(textarea$, "class", "svelte-1gnnuv");
-    			add_location(textarea$, file$, 705, 10, 28583);
+    			attr_dev(textarea$, "class", "svelte-101uug8");
+    			add_location(textarea$, file$, 796, 16, 31773);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -10930,14 +11524,14 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(700:8) {:else}",
+    		source: "(786:12) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (695:50) 
+    // (777:54) 
     function create_if_block$_3(ctx) {
     	let h3$;
     	let t1$;
@@ -10965,16 +11559,16 @@ var app = (function () {
     			label1$.textContent = "Output:";
     			t6$ = space();
     			textarea$ = element("textarea");
-    			attr_dev(h3$, "class", "svelte-1gnnuv");
-    			add_location(h3$, file$, 695, 10, 28058);
-    			attr_dev(label0$, "class", "svelte-1gnnuv");
-    			add_location(label0$, file$, 696, 10, 28084);
-    			attr_dev(label1$, "class", "svelte-1gnnuv");
-    			add_location(label1$, file$, 697, 10, 28136);
-    			attr_dev(textarea$, "rows", "5");
+    			attr_dev(h3$, "class", "svelte-101uug8");
+    			add_location(h3$, file$, 777, 16, 31016);
+    			attr_dev(label0$, "class", "svelte-101uug8");
+    			add_location(label0$, file$, 778, 16, 31048);
+    			attr_dev(label1$, "class", "svelte-101uug8");
+    			add_location(label1$, file$, 779, 16, 31106);
+    			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
-    			attr_dev(textarea$, "class", "svelte-1gnnuv");
-    			add_location(textarea$, file$, 698, 10, 28169);
+    			attr_dev(textarea$, "class", "svelte-101uug8");
+    			add_location(textarea$, file$, 780, 16, 31145);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11017,14 +11611,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_3.name,
     		type: "if",
-    		source: "(695:50) ",
+    		source: "(777:54) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (690:8) {#if selectedShape.role === "input"}
+    // (771:12) {#if selectedShape.role === "input"}
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
@@ -11052,15 +11646,15 @@ var app = (function () {
     			label1$.textContent = "Input:";
     			t6$ = space();
     			textarea$ = element("textarea");
-    			attr_dev(h3$, "class", "svelte-1gnnuv");
-    			add_location(h3$, file$, 690, 10, 27820);
-    			attr_dev(label0$, "class", "svelte-1gnnuv");
-    			add_location(label0$, file$, 691, 10, 27845);
-    			attr_dev(label1$, "class", "svelte-1gnnuv");
-    			add_location(label1$, file$, 692, 10, 27897);
+    			attr_dev(h3$, "class", "svelte-101uug8");
+    			add_location(h3$, file$, 771, 16, 30733);
+    			attr_dev(label0$, "class", "svelte-101uug8");
+    			add_location(label0$, file$, 772, 16, 30764);
+    			attr_dev(label1$, "class", "svelte-101uug8");
+    			add_location(label1$, file$, 773, 16, 30822);
     			attr_dev(textarea$, "rows", "5");
-    			attr_dev(textarea$, "class", "svelte-1gnnuv");
-    			add_location(textarea$, file$, 693, 10, 27929);
+    			attr_dev(textarea$, "class", "svelte-101uug8");
+    			add_location(textarea$, file$, 774, 16, 30860);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11103,17 +11697,17 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(690:8) {#if selectedShape.role === \\\"input\\\"}",
+    		source: "(771:12) {#if selectedShape.role === \\\"input\\\"}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (714:8) {#if label.name}
+    // (809:12) {#if label.name}
     function create_if_block$(ctx) {
     	let div$;
-    	let t0$_value$ = /*label*/ ctx[22].name + "";
+    	let t0$_value$ = /*label*/ ctx[24].name + "";
     	let t0$;
     	let t1$;
 
@@ -11122,10 +11716,10 @@ var app = (function () {
     			div$ = element("div");
     			t0$ = text(t0$_value$);
     			t1$ = space();
-    			attr_dev(div$, "class", "node-label svelte-1gnnuv");
-    			set_style(div$, "left", /*label*/ ctx[22].x + "px");
-    			set_style(div$, "top", /*label*/ ctx[22].y + "px");
-    			add_location(div$, file$, 714, 10, 28849);
+    			attr_dev(div$, "class", "node-label svelte-101uug8");
+    			set_style(div$, "left", /*label*/ ctx[24].x + "px");
+    			set_style(div$, "top", /*label*/ ctx[24].y + "px");
+    			add_location(div$, file$, 809, 16, 32137);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
@@ -11133,14 +11727,14 @@ var app = (function () {
     			append_dev(div$, t1$);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*labels*/ 2 && t0$_value$ !== (t0$_value$ = /*label*/ ctx[22].name + "")) set_data_dev(t0$, t0$_value$);
+    			if (dirty & /*labels*/ 2 && t0$_value$ !== (t0$_value$ = /*label*/ ctx[24].name + "")) set_data_dev(t0$, t0$_value$);
 
     			if (dirty & /*labels*/ 2) {
-    				set_style(div$, "left", /*label*/ ctx[22].x + "px");
+    				set_style(div$, "left", /*label*/ ctx[24].x + "px");
     			}
 
     			if (dirty & /*labels*/ 2) {
-    				set_style(div$, "top", /*label*/ ctx[22].y + "px");
+    				set_style(div$, "top", /*label*/ ctx[24].y + "px");
     			}
     		},
     		d: function destroy(detaching) {
@@ -11152,18 +11746,18 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(714:8) {#if label.name}",
+    		source: "(809:12) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (713:6) {#each labels as label, i (i)}
+    // (808:8) {#each labels as label, i (i)}
     function create_each_block$(key$_1, ctx) {
     	let first$;
     	let if_block$_anchor$;
-    	let if_block$ = /*label*/ ctx[22].name && create_if_block$(ctx);
+    	let if_block$ = /*label*/ ctx[24].name && create_if_block$(ctx);
 
     	const block$ = {
     		key: key$_1,
@@ -11182,7 +11776,7 @@ var app = (function () {
     		p: function update(new_ctx, dirty) {
     			ctx = new_ctx;
 
-    			if (/*label*/ ctx[22].name) {
+    			if (/*label*/ ctx[24].name) {
     				if (if_block$) {
     					if_block$.p(ctx, dirty);
     				} else {
@@ -11206,7 +11800,7 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$.name,
     		type: "each",
-    		source: "(713:6) {#each labels as label, i (i)}",
+    		source: "(808:8) {#each labels as label, i (i)}",
     		ctx
     	});
 
@@ -11237,7 +11831,7 @@ var app = (function () {
     	let if_block$ = /*selectedShape*/ ctx[2] && create_if_block$_1(ctx);
     	let each_value$ = /*labels*/ ctx[1];
     	validate_each_argument(each_value$);
-    	const get_key$ = ctx => /*i*/ ctx[24];
+    	const get_key$ = ctx => /*i*/ ctx[26];
     	validate_each_keys(ctx, each_value$, get_each_context$, get_key$);
 
     	for (let i = 0; i < each_value$.length; i += 1) {
@@ -11270,24 +11864,24 @@ var app = (function () {
     			t6$ = space();
     			button2$ = element("button");
     			t7$ = text("Stop");
-    			attr_dev(div0$, "class", "info-panel svelte-1gnnuv");
-    			add_location(div0$, file$, 687, 4, 27714);
-    			attr_dev(canvas$, "class", "svelte-1gnnuv");
-    			add_location(canvas$, file$, 711, 6, 28740);
-    			attr_dev(div1$, "class", "canvas-container svelte-1gnnuv");
-    			add_location(div1$, file$, 710, 4, 28703);
-    			attr_dev(button0$, "class", "svelte-1gnnuv");
-    			add_location(button0$, file$, 722, 6, 29034);
+    			attr_dev(div0$, "class", "info-panel svelte-101uug8");
+    			add_location(div0$, file$, 768, 4, 30615);
+    			attr_dev(canvas$, "class", "svelte-101uug8");
+    			add_location(canvas$, file$, 806, 8, 32016);
+    			attr_dev(div1$, "class", "canvas-container svelte-101uug8");
+    			add_location(div1$, file$, 805, 4, 31977);
+    			attr_dev(button0$, "class", "svelte-101uug8");
+    			add_location(button0$, file$, 820, 8, 32401);
     			button1$.disabled = /*isRunning*/ ctx[3];
-    			attr_dev(button1$, "class", "svelte-1gnnuv");
-    			add_location(button1$, file$, 723, 6, 29087);
+    			attr_dev(button1$, "class", "svelte-101uug8");
+    			add_location(button1$, file$, 821, 8, 32456);
     			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[3];
-    			attr_dev(button2$, "class", "svelte-1gnnuv");
-    			add_location(button2$, file$, 724, 6, 29160);
-    			attr_dev(div2$, "class", "controls svelte-1gnnuv");
-    			add_location(div2$, file$, 721, 4, 29005);
-    			attr_dev(div3$, "class", "app-wrap svelte-1gnnuv");
-    			add_location(div3$, file$, 686, 2, 27687);
+    			attr_dev(button2$, "class", "svelte-101uug8");
+    			add_location(button2$, file$, 822, 8, 32531);
+    			attr_dev(div2$, "class", "controls svelte-101uug8");
+    			add_location(div2$, file$, 819, 4, 32370);
+    			attr_dev(div3$, "class", "app-wrap svelte-101uug8");
+    			add_location(div3$, file$, 767, 0, 30588);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11384,36 +11978,6 @@ var app = (function () {
     	return block$;
     }
 
-    async function runCommand(cmd, input) {
-    	// If no command provided, do not forward input by default
-    	if (!cmd) return "";
-
-    	// Replace template variable {input} with actual data
-    	const expanded = cmd.replace(/{input}/g, input);
-
-    	const parts = expanded.trim().split(" ");
-    	const name = parts[0].toLowerCase();
-
-    	if (name === "curl" && parts[1]) {
-    		try {
-    			const res = await fetch(parts[1]);
-    			return await res.text();
-    		} catch(e) {
-    			return `Error fetching ${parts[1]}: ${e.message}`;
-    		}
-    	} else if (name === "uppercase") {
-    		return input.toUpperCase();
-    	} else if (name === "lowercase") {
-    		return input.toLowerCase();
-    	} else if (name === "echo") {
-    		// Prototype basic shell 'echo': return concatenated arguments
-    		return parts.slice(1).join(" ");
-    	}
-
-    	// Fallback: return the expanded command string
-    	return "";
-    }
-
     function instance$($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots('App', slots, []);
@@ -11433,7 +11997,7 @@ var app = (function () {
     	// Highlight during pipeline execution: yellow (#FFEB3B)
     	const highlightColor = [1, 0.92, 0.23, 1];
 
-    	let scene = [
+    	const DEFAULT_SCENE = [
     		{
     			type: "circle",
     			role: "input",
@@ -11457,6 +12021,43 @@ var app = (function () {
     			highlight: false
     		}
     	];
+
+    	let scene;
+
+    	if (typeof window !== "undefined") {
+    		const saved = window.localStorage.getItem("scene");
+
+    		if (saved) {
+    			try {
+    				const parsed = JSON.parse(saved);
+    				const circles = parsed.filter(s => s.type === "circle");
+    				const edgesRaw = parsed.filter(s => s.type === "edge");
+    				scene = [...circles];
+
+    				edgesRaw.forEach(e => {
+    					const fromNode = scene.find(s => s.type === "circle" && s.name === e.from.name);
+    					const toNode = scene.find(s => s.type === "circle" && s.name === e.to.name);
+
+    					if (fromNode && toNode) {
+    						scene.push({
+    							type: "edge",
+    							from: fromNode,
+    							to: toNode,
+    							color: e.color,
+    							selected: e.selected,
+    							highlight: e.highlight || false
+    						});
+    					}
+    				});
+    			} catch(err) {
+    				scene = DEFAULT_SCENE;
+    			}
+    		} else {
+    			scene = DEFAULT_SCENE;
+    		}
+    	} else {
+    		scene = DEFAULT_SCENE;
+    	}
 
     	// View transform for positioning and zoom
     	let viewScale = 1;
@@ -12075,6 +12676,44 @@ var app = (function () {
     		return cur === outputNode ? nodes : [];
     	}
 
+    	async function runCommand(input) {
+    		try {
+    			const output = await Command.create("exec-sh", ["-c", input]).execute();
+    			return output.stdout;
+    		} catch(e) {
+    			console.error("Shell command error:", e);
+    			return `Error executing command: ${e.message}`;
+    		}
+    	}
+
+    	// async function runCommand(cmd, input) {
+    	//     // If no command provided, do not forward input by default
+    	//     if (!cmd) return "";
+    	//     // Replace template variable {input} with actual data
+    	//     const expanded = cmd.replace(/{input}/g, input);
+    	//     // Helper to invoke Tauri backend if available
+    	//     async function invokeTauri(command) {
+    	//         try {
+    	//             const { invoke: tauriInvoke } = await import(
+    	//                 "@tauri-apps/api/tauri"
+    	//             );
+    	//             return await tauriInvoke("run_command", { cmd: command });
+    	//         } catch (e) {
+    	//             return `Error executing command: ${e}`;
+    	//         }
+    	//     }
+    	//     // If the command uses shell features (e.g. multiple commands), delegate to backend shell
+    	//     // Fallback: run command via backend shell
+    	//     try {
+    	//         const { invoke: tauriInvoke } = await import(
+    	//             "@tauri-apps/api/tauri"
+    	//         );
+    	//         return await tauriInvoke("run_command", { cmd: expanded });
+    	//     } catch (e) {
+    	//         console.error("Error invoking Tauri command:", e);
+    	//     }
+    	//     return "Simulating: " + expanded;
+    	// }
     	async function playPipeline() {
     		if (isRunning) return;
     		const nodes = getPipelineNodes();
@@ -12108,7 +12747,12 @@ var app = (function () {
     			}
 
     			if (node.role === "default") {
-    				data = await runCommand(node.command, data);
+    				// Replace template variable {input} with output from previous node
+    				const cmd = node.command.replace(/\{input\}/g, data);
+
+    				console.log(`Running command on node ${node.name}: ${cmd}`);
+    				data = await runCommand(cmd);
+    				console.log("Command output:", data);
 
     				// Store and show intermediate output
     				node.outputText = data;
@@ -12172,6 +12816,7 @@ var app = (function () {
     	}
 
     	$$self.$capture_state = () => ({
+    		Command,
     		reglLib: regl,
     		onMount,
     		canvas,
@@ -12179,6 +12824,7 @@ var app = (function () {
     		defaultNodeColor,
     		selectedColor,
     		highlightColor,
+    		DEFAULT_SCENE,
     		scene,
     		viewScale,
     		viewOffset,
@@ -12230,6 +12876,12 @@ var app = (function () {
 
     				// Active shape: prefer highlighted (during play), otherwise selected by user; fallback to output node
     				$$invalidate(2, selectedShape = scene.find(s => s.type === "circle" && (s.highlight || s.selected)) || scene.find(s => s.type === "circle" && s.role === "output"));
+    			}
+    		}
+
+    		if ($$self.$$.dirty & /*scene*/ 128) {
+    			if (typeof window !== "undefined") {
+    				window.localStorage.setItem("scene", JSON.stringify(scene));
     			}
     		}
     	};

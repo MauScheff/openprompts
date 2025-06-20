@@ -1,0 +1,11 @@
+[package]
+name = "webapp"
+version = "1.0.0"
+edition = "2021"
+build = "build.rs"    # 👈 Required for build.rs to be recognized
+
+[dependencies]
+tauri = { version = "1", features = ["api-all"] }
+
+[build-dependencies]
+tauri-build = { version = "1", features = [] }

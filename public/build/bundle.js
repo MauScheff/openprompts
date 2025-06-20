@@ -10755,30 +10755,26 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (611:0) {#each labels as label, i (i)}
-    function create_each_block$(key$_1, ctx) {
+    // (620:4) {#if label.name}
+    function create_if_block$_3(ctx) {
     	let div$;
     	let t$_value$ = /*label*/ ctx[18].name + "";
     	let t$;
 
     	const block$ = {
-    		key: key$_1,
-    		first: null,
     		c: function create() {
     			div$ = element("div");
     			t$ = text(t$_value$);
     			attr_dev(div$, "class", "node-label svelte-1fo8fom");
     			set_style(div$, "left", /*label*/ ctx[18].x + "px");
     			set_style(div$, "top", /*label*/ ctx[18].y + "px");
-    			add_location(div$, file$, 611, 4, 24167);
-    			this.first = div$;
+    			add_location(div$, file$, 620, 8, 24851);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
     			append_dev(div$, t$);
     		},
-    		p: function update(new_ctx, dirty) {
-    			ctx = new_ctx;
+    		p: function update(ctx, dirty) {
     			if (dirty & /*labels*/ 2 && t$_value$ !== (t$_value$ = /*label*/ ctx[18].name + "")) set_data_dev(t$, t$_value$);
 
     			if (dirty & /*labels*/ 2) {
@@ -10796,16 +10792,70 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block: block$,
-    		id: create_each_block$.name,
-    		type: "each",
-    		source: "(611:0) {#each labels as label, i (i)}",
+    		id: create_if_block$_3.name,
+    		type: "if",
+    		source: "(620:4) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (622:4) {#if selectedShape}
+    // (619:0) {#each labels as label, i (i)}
+    function create_each_block$(key$_1, ctx) {
+    	let first$;
+    	let if_block$_anchor$;
+    	let if_block$ = /*label*/ ctx[18].name && create_if_block$_3(ctx);
+
+    	const block$ = {
+    		key: key$_1,
+    		first: null,
+    		c: function create() {
+    			first$ = empty();
+    			if (if_block$) if_block$.c();
+    			if_block$_anchor$ = empty();
+    			this.first = first$;
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, first$, anchor);
+    			if (if_block$) if_block$.m(target, anchor);
+    			insert_dev(target, if_block$_anchor$, anchor);
+    		},
+    		p: function update(new_ctx, dirty) {
+    			ctx = new_ctx;
+
+    			if (/*label*/ ctx[18].name) {
+    				if (if_block$) {
+    					if_block$.p(ctx, dirty);
+    				} else {
+    					if_block$ = create_if_block$_3(ctx);
+    					if_block$.c();
+    					if_block$.m(if_block$_anchor$.parentNode, if_block$_anchor$);
+    				}
+    			} else if (if_block$) {
+    				if_block$.d(1);
+    				if_block$ = null;
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(first$);
+    			if (if_block$) if_block$.d(detaching);
+    			if (detaching) detach_dev(if_block$_anchor$);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block: block$,
+    		id: create_each_block$.name,
+    		type: "each",
+    		source: "(619:0) {#each labels as label, i (i)}",
+    		ctx
+    	});
+
+    	return block$;
+    }
+
+    // (632:4) {#if selectedShape}
     function create_if_block$(ctx) {
     	let if_block$_anchor$;
 
@@ -10850,14 +10900,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(622:4) {#if selectedShape}",
+    		source: "(632:4) {#if selectedShape}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (634:8) {:else}
+    // (644:8) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -10898,23 +10948,23 @@ var app = (function () {
     			t9$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1fo8fom");
-    			add_location(h3$, file$, 634, 12, 25091);
+    			add_location(h3$, file$, 644, 12, 25793);
     			attr_dev(input0$, "class", "svelte-1fo8fom");
-    			add_location(input0$, file$, 635, 25, 25130);
+    			add_location(input0$, file$, 645, 25, 25832);
     			attr_dev(label0$, "class", "svelte-1fo8fom");
-    			add_location(label0$, file$, 635, 12, 25117);
+    			add_location(label0$, file$, 645, 12, 25819);
     			attr_dev(input1$, "class", "svelte-1fo8fom");
-    			add_location(input1$, file$, 636, 28, 25208);
+    			add_location(input1$, file$, 646, 28, 25910);
     			attr_dev(label1$, "class", "svelte-1fo8fom");
-    			add_location(label1$, file$, 636, 12, 25192);
+    			add_location(label1$, file$, 646, 12, 25894);
     			attr_dev(label2$, "class", "hint svelte-1fo8fom");
-    			add_location(label2$, file$, 637, 12, 25273);
+    			add_location(label2$, file$, 647, 12, 25975);
     			attr_dev(label3$, "class", "svelte-1fo8fom");
-    			add_location(label3$, file$, 640, 12, 25405);
+    			add_location(label3$, file$, 650, 12, 26107);
     			attr_dev(textarea$, "rows", "5");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-1fo8fom");
-    			add_location(textarea$, file$, 641, 12, 25440);
+    			add_location(textarea$, file$, 651, 12, 26142);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -10980,14 +11030,14 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(634:8) {:else}",
+    		source: "(644:8) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (628:50) 
+    // (638:50) 
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
@@ -11016,15 +11066,15 @@ var app = (function () {
     			t6$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1fo8fom");
-    			add_location(h3$, file$, 628, 12, 24855);
+    			add_location(h3$, file$, 638, 12, 25557);
     			attr_dev(label0$, "class", "svelte-1fo8fom");
-    			add_location(label0$, file$, 629, 12, 24883);
+    			add_location(label0$, file$, 639, 12, 25585);
     			attr_dev(label1$, "class", "svelte-1fo8fom");
-    			add_location(label1$, file$, 630, 12, 24937);
+    			add_location(label1$, file$, 640, 12, 25639);
     			attr_dev(textarea$, "rows", "5");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-1fo8fom");
-    			add_location(textarea$, file$, 631, 12, 24972);
+    			add_location(textarea$, file$, 641, 12, 25674);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11067,14 +11117,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(628:50) ",
+    		source: "(638:50) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (623:8) {#if selectedShape.role === "input"}
+    // (633:8) {#if selectedShape.role === "input"}
     function create_if_block$_1(ctx) {
     	let h3$;
     	let t1$;
@@ -11103,14 +11153,14 @@ var app = (function () {
     			t6$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1fo8fom");
-    			add_location(h3$, file$, 623, 12, 24609);
+    			add_location(h3$, file$, 633, 12, 25311);
     			attr_dev(label0$, "class", "svelte-1fo8fom");
-    			add_location(label0$, file$, 624, 12, 24636);
+    			add_location(label0$, file$, 634, 12, 25338);
     			attr_dev(label1$, "class", "svelte-1fo8fom");
-    			add_location(label1$, file$, 625, 12, 24690);
+    			add_location(label1$, file$, 635, 12, 25392);
     			attr_dev(textarea$, "rows", "5");
     			attr_dev(textarea$, "class", "svelte-1fo8fom");
-    			add_location(textarea$, file$, 626, 12, 24724);
+    			add_location(textarea$, file$, 636, 12, 25426);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11153,7 +11203,7 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(623:8) {#if selectedShape.role === \\\"input\\\"}",
+    		source: "(633:8) {#if selectedShape.role === \\\"input\\\"}",
     		ctx
     	});
 
@@ -11215,19 +11265,19 @@ var app = (function () {
     			div1$ = element("div");
     			if (if_block$) if_block$.c();
     			attr_dev(canvas$, "class", "svelte-1fo8fom");
-    			add_location(canvas$, file$, 609, 0, 24095);
+    			add_location(canvas$, file$, 617, 0, 24754);
     			attr_dev(button0$, "class", "svelte-1fo8fom");
-    			add_location(button0$, file$, 616, 4, 24304);
+    			add_location(button0$, file$, 626, 4, 25006);
     			button1$.disabled = /*isRunning*/ ctx[3];
     			attr_dev(button1$, "class", "svelte-1fo8fom");
-    			add_location(button1$, file$, 617, 4, 24357);
+    			add_location(button1$, file$, 627, 4, 25059);
     			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[3];
     			attr_dev(button2$, "class", "svelte-1fo8fom");
-    			add_location(button2$, file$, 618, 4, 24428);
+    			add_location(button2$, file$, 628, 4, 25130);
     			attr_dev(div0$, "class", "controls svelte-1fo8fom");
-    			add_location(div0$, file$, 615, 0, 24277);
+    			add_location(div0$, file$, 625, 0, 24979);
     			attr_dev(div1$, "class", "info-panel svelte-1fo8fom");
-    			add_location(div1$, file$, 620, 0, 24503);
+    			add_location(div1$, file$, 630, 0, 25205);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11833,10 +11883,7 @@ var app = (function () {
     					? [1, 1, 0, 1]
     					: shape.highlight ? [0, 1, 1, 1] : shape.color;
 
-    					// Draw line between circle centers
-    					drawLine({ positions: [p1, p2], color: edgeColor });
-
-    					// Draw arrow head at end
+    					// Compute direction and clip line to circle perimeters
     					const dx = p2[0] - p1[0];
 
     					const dy = p2[1] - p1[1];
@@ -11845,19 +11892,43 @@ var app = (function () {
     					if (len > 0) {
     						const ux = dx / len;
     						const uy = dy / len;
-    						const arrowLength = 0.05;
-    						const arrowWidth = 0.02;
-    						const baseX = p2[0] - ux * arrowLength;
-    						const baseY = p2[1] - uy * arrowLength;
+    						const aspect = canvas.clientHeight / canvas.clientWidth;
+
+    						// Source circle boundary
+    						const r1 = shape.from.radius;
+
+    						const rX1 = r1 * aspect;
+    						const rY1 = r1;
+    						const t0 = rX1 * rY1 / Math.sqrt(ux * ux * rY1 * rY1 + uy * uy * rX1 * rX1);
+    						const start = [p1[0] + ux * t0, p1[1] + uy * t0];
+
+    						// Target circle boundary
+    						const r2 = shape.to.radius;
+
+    						const rX2 = r2 * aspect;
+    						const rY2 = r2;
+    						const t1 = rX2 * rY2 / Math.sqrt(ux * ux * rY2 * rY2 + uy * uy * rX2 * rX2);
+    						const end = [p2[0] - ux * t1, p2[1] - uy * t1];
+
+    						// Draw clipped line
+    						drawLine({
+    							positions: [start, end],
+    							color: edgeColor
+    						});
+
+    						// Draw arrow head at the perimeter
+    						const arrowLen = r2 * 0.4;
+
+    						const arrowWid = r2 * 0.15;
+    						const baseX = end[0] - ux * arrowLen;
+    						const baseY = end[1] - uy * arrowLen;
     						const px = -uy;
     						const py = ux;
-    						const leftX = baseX + px * arrowWidth;
-    						const leftY = baseY + py * arrowWidth;
-    						const rightX = baseX - px * arrowWidth;
-    						const rightY = baseY - py * arrowWidth;
+    						const left = [baseX + px * arrowWid, baseY + py * arrowWid];
+    						const right = [baseX - px * arrowWid, baseY - py * arrowWid];
 
     						drawTriangle({
-    							positions: [[p2[0], p2[1]], [leftX, leftY], [rightX, rightY]],
+    							positions: [[end[0], end[1]], left, right],
     							color: edgeColor
     						});
     					}

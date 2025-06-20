@@ -435,31 +435,39 @@
                         : shape.highlight
                           ? [0, 1, 1, 1]
                           : shape.color;
-                    // Draw line between circle centers
-                    drawLine({ positions: [p1, p2], color: edgeColor });
-                    // Draw arrow head at end
+                    // Compute direction and clip line to circle perimeters
                     const dx = p2[0] - p1[0];
                     const dy = p2[1] - p1[1];
                     const len = Math.sqrt(dx * dx + dy * dy);
                     if (len > 0) {
                         const ux = dx / len;
                         const uy = dy / len;
-                        const arrowLength = 0.05;
-                        const arrowWidth = 0.02;
-                        const baseX = p2[0] - ux * arrowLength;
-                        const baseY = p2[1] - uy * arrowLength;
+                        const aspect = canvas.clientHeight / canvas.clientWidth;
+                        // Source circle boundary
+                        const r1 = shape.from.radius;
+                        const rX1 = r1 * aspect;
+                        const rY1 = r1;
+                        const t0 = (rX1 * rY1) / Math.sqrt(ux*ux * rY1*rY1 + uy*uy * rX1*rX1);
+                        const start = [p1[0] + ux * t0, p1[1] + uy * t0];
+                        // Target circle boundary
+                        const r2 = shape.to.radius;
+                        const rX2 = r2 * aspect;
+                        const rY2 = r2;
+                        const t1 = (rX2 * rY2) / Math.sqrt(ux*ux * rY2*rY2 + uy*uy * rX2*rX2);
+                        const end = [p2[0] - ux * t1, p2[1] - uy * t1];
+                        // Draw clipped line
+                        drawLine({ positions: [start, end], color: edgeColor });
+                        // Draw arrow head at the perimeter
+                        const arrowLen = r2 * 0.4;
+                        const arrowWid = r2 * 0.15;
+                        const baseX = end[0] - ux * arrowLen;
+                        const baseY = end[1] - uy * arrowLen;
                         const px = -uy;
                         const py = ux;
-                        const leftX = baseX + px * arrowWidth;
-                        const leftY = baseY + py * arrowWidth;
-                        const rightX = baseX - px * arrowWidth;
-                        const rightY = baseY - py * arrowWidth;
+                        const left = [baseX + px * arrowWid, baseY + py * arrowWid];
+                        const right = [baseX - px * arrowWid, baseY - py * arrowWid];
                         drawTriangle({
-                            positions: [
-                                [p2[0], p2[1]],
-                                [leftX, leftY],
-                                [rightX, rightY],
-                            ],
+                            positions: [[end[0], end[1]], left, right],
                             color: edgeColor,
                         });
                     }
@@ -609,9 +617,11 @@
 
 <canvas bind:this={canvas}></canvas>
 {#each labels as label, i (i)}
-    <div class="node-label" style="left: {label.x}px; top: {label.y}px;">
-        {label.name}
-    </div>
+    {#if label.name}
+        <div class="node-label" style="left: {label.x}px; top: {label.y}px;">
+            {label.name}
+        </div>
+    {/if}
 {/each}
 <div class="controls">
     <button on:click={addCircle}>Add Circle</button>

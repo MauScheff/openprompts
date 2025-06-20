@@ -4,11 +4,15 @@
 
     let canvas;
     // Define consistent node colors: same for input/output, same for inner nodes
-    const ioColor = [0.384, 0, 0.933, 1];        // primary (#6200ee)
-    // Accent color for inner nodes (#61afef)
-    const defaultNodeColor = [0.380, 0.686, 0.937, 1]; // secondary (#61afef)
-    // Color used for selected nodes and edges
-    const selectedColor = [0.216, 0, 0.702, 1];  // primary-dark (#3700b3)
+    // Node color palette for high contrast against dark background
+    // Input/output nodes: amber (#FFB74D)
+    const ioColor = [1, 0.718, 0.302, 1];
+    // Prompt nodes: cyan (#4DD0E1)
+    const defaultNodeColor = [0.302, 0.816, 0.882, 1];
+    // Selected nodes and edges: pink (#E91E63)
+    const selectedColor = [0.91, 0.12, 0.39, 1];
+    // Highlight during pipeline execution: yellow (#FFEB3B)
+    const highlightColor = [1, 0.92, 0.23, 1];
     let scene = [
         {
             type: "circle",
@@ -88,6 +92,8 @@
                 selected: false,
             });
         }
+        // Select the new prompt node and clear previous selections
+        scene.forEach(s => { s.selected = (s === newNode); });
         // Trigger reactivity for scene change
         scene = [...scene];
     }
@@ -466,7 +472,8 @@
             viewOffset[0] += (viewOffsetTarget[0] - viewOffset[0]) * SMOOTHING;
             viewOffset[1] += (viewOffsetTarget[1] - viewOffset[1]) * SMOOTHING;
 
-            regl.clear({ color: [0, 0, 0, 1], depth: 1 });
+            // Warm dark grey background
+            regl.clear({ color: [0.18, 0.18, 0.18, 1], depth: 1 });
             // Draw edges with arrow heads
             scene.forEach((shape) => {
                 if (shape.type === "edge") {
@@ -476,7 +483,7 @@
                     const edgeColor = shape.selected
                         ? selectedColor
                         : shape.highlight
-                          ? [0, 1, 1, 1]
+                          ? highlightColor
                           : shape.color;
                     // Compute direction and clip line to circle perimeters
                     const dx = p2[0] - p1[0];
@@ -519,16 +526,34 @@
             // Draw circles on top of edges
             scene.forEach((shape) => {
                 if (shape.type === "circle") {
-                    const circleColor = shape.selected
-                        ? selectedColor
-                        : shape.highlight
-                          ? [0, 1, 1, 1]
-                          : shape.color;
-                    drawCircle({
-                        center: shape.center,
-                        radius: shape.radius,
-                        color: circleColor,
-                    });
+                    if (shape.highlight) {
+                        // Highlighted during play: fill with highlight color
+                        drawCircle({
+                            center: shape.center,
+                            radius: shape.radius,
+                            color: highlightColor,
+                        });
+                    } else if (shape.selected) {
+                        // Selected: draw an outline ring then fill
+                        const outlineFactor = 1.2;
+                        drawCircle({
+                            center: shape.center,
+                            radius: shape.radius * outlineFactor,
+                            color: selectedColor,
+                        });
+                        drawCircle({
+                            center: shape.center,
+                            radius: shape.radius,
+                            color: shape.color,
+                        });
+                    } else {
+                        // Normal node
+                        drawCircle({
+                            center: shape.center,
+                            radius: shape.radius,
+                            color: shape.color,
+                        });
+                    }
                 }
             });
         });
@@ -695,7 +720,7 @@
     </div>
 
     <div class="controls">
-      <button on:click={addCircle}>Add Prompt</button>
+      <button on:click={addCircle}>Add Step</button>
       <button on:click={playPipeline} disabled={isRunning}>Play</button>
       <button on:click={stopPipeline} disabled={!isRunning}>Stop</button>
     </div>
@@ -709,8 +734,8 @@
     --primary: #6200ee;
     --primary-dark: #3700b3;
     --secondary: #61afef;
-    /* Dark background inspired by code editor themes */
-    --bg-light: #282c34;
+    /* Warm dark grey background (like Figma) */
+    --bg-light: #2e2e2e;
     --surface: #ffffff;
     --text-primary: #333333;
     --text-secondary: #666666;
@@ -792,7 +817,7 @@
     background: var(--surface);
     padding: 16px;
     box-shadow: var(--shadow-elevation);
-    border-radius: var(--border-radius);
+    /* border-radius: var(--border-radius); */
     overflow-y: auto;
     font-family: 'Inter', system-ui, sans-serif;
   }

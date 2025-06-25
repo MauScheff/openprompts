@@ -15,7 +15,7 @@
           "args": [
             "-c",
             {
-              "validator": ".+"
+              "validator": "^[\\s\\S]*$"
             }
           ]
         },

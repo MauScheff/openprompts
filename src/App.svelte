@@ -1,5 +1,6 @@
 <script>
-    import { Command } from "@tauri-apps/plugin-shell";
+    import { invoke } from "@tauri-apps/api/core";
+
     import reglLib from "regl";
     import { onMount } from "svelte";
 
@@ -664,17 +665,15 @@
         return cur === outputNode ? nodes : [];
     }
 
-    async function runCommand(input) {
+    async function runCommand(stdin, cmd) {
+        let result = "";
         try {
-            const output = await Command.create("exec-sh", [
-                "-c",
-                input,
-            ]).execute();
-            return output.stdout;
-        } catch (e) {
-            console.error("Shell command error:", e);
-            return `Error executing command: ${e.message}`;
+            result = await invoke("run_command", { stdin: stdin, cmd: cmd });
+            console.log(`Command executed: ${cmd} with result:`, result);
+        } catch (error) {
+            result = `Error here: ${error}`;
         }
+        return result;
     }
 
     // async function runCommand(cmd, input) {
@@ -738,9 +737,9 @@
             }
             if (node.role === "default") {
                 // Replace template variable {input} with output from previous node
-                const cmd = node.command.replace(/\{input\}/g, data);
-                console.log(`Running command on node ${node.name}: ${cmd}`);
-                data = await runCommand(cmd);
+                const cmd = node.command.replace(/\{input\}/g, data);                
+                console.log(`Running command on node ${node.name}: ${cmd} with stdin: ${data}`);
+                data = await runCommand(data, cmd);
                 console.log("Command output:", data);
                 // Store and show intermediate output
                 node.outputText = data;
@@ -790,8 +789,7 @@
                     >Prompt: <input bind:value={selectedShape.command} /></label
                 >
                 <label class="hint"
-                    >Use &#123;input&#125; to reference the previous node's
-                    output</label
+                    >Use $INPUT to reference the previous node's output</label
                 >
                 <label>Output:</label>
                 <textarea

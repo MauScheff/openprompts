@@ -1,5 +1,5 @@
 
-(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35739/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
+(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35731/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
 var app = (function () {
     'use strict';
 
@@ -544,156 +544,12 @@ var app = (function () {
     OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
     PERFORMANCE OF THIS SOFTWARE.
     ***************************************************************************** */
-    /* global Reflect, Promise, SuppressedError, Symbol, Iterator */
-
-
-    function __classPrivateFieldGet(receiver, state, kind, f) {
-        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-        return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-    }
-
-    function __classPrivateFieldSet(receiver, state, value, kind, f) {
-        if (kind === "m") throw new TypeError("Private method is not writable");
-        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-        return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-    }
 
     typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
         var e = new Error(message);
         return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
     };
 
-    // Copyright 2019-2024 Tauri Programme within The Commons Conservancy
-    // SPDX-License-Identifier: Apache-2.0
-    // SPDX-License-Identifier: MIT
-    var _Channel_onmessage, _Channel_nextMessageIndex, _Channel_pendingMessages, _Channel_messageEndIndex;
-    /**
-     * Invoke your custom commands.
-     *
-     * This package is also accessible with `window.__TAURI__.core` when [`app.withGlobalTauri`](https://v2.tauri.app/reference/config/#withglobaltauri) in `tauri.conf.json` is set to `true`.
-     * @module
-     */
-    /**
-     * A key to be used to implement a special function
-     * on your types that define how your type should be serialized
-     * when passing across the IPC.
-     * @example
-     * Given a type in Rust that looks like this
-     * ```rs
-     * #[derive(serde::Serialize, serde::Deserialize)
-     * enum UserId {
-     *   String(String),
-     *   Number(u32),
-     * }
-     * ```
-     * `UserId::String("id")` would be serialized into `{ String: "id" }`
-     * and so we need to pass the same structure back to Rust
-     * ```ts
-     * import { SERIALIZE_TO_IPC_FN } from "@tauri-apps/api/core"
-     *
-     * class UserIdString {
-     *   id
-     *   constructor(id) {
-     *     this.id = id
-     *   }
-     *
-     *   [SERIALIZE_TO_IPC_FN]() {
-     *     return { String: this.id }
-     *   }
-     * }
-     *
-     * class UserIdNumber {
-     *   id
-     *   constructor(id) {
-     *     this.id = id
-     *   }
-     *
-     *   [SERIALIZE_TO_IPC_FN]() {
-     *     return { Number: this.id }
-     *   }
-     * }
-     *
-     * type UserId = UserIdString | UserIdNumber
-     * ```
-     *
-     */
-    // if this value changes, make sure to update it in:
-    // 1. ipc.js
-    // 2. process-ipc-message-fn.js
-    const SERIALIZE_TO_IPC_FN = '__TAURI_TO_IPC_KEY__';
-    /**
-     * Transforms a callback function to a string identifier that can be passed to the backend.
-     * The backend uses the identifier to `eval()` the callback.
-     *
-     * @return A unique identifier associated with the callback function.
-     *
-     * @since 1.0.0
-     */
-    function transformCallback(callback, once = false) {
-        return window.__TAURI_INTERNALS__.transformCallback(callback, once);
-    }
-    class Channel {
-        constructor(onmessage) {
-            _Channel_onmessage.set(this, void 0);
-            // the index is used as a mechanism to preserve message order
-            _Channel_nextMessageIndex.set(this, 0);
-            _Channel_pendingMessages.set(this, []);
-            _Channel_messageEndIndex.set(this, void 0);
-            __classPrivateFieldSet(this, _Channel_onmessage, onmessage || (() => { }), "f");
-            this.id = transformCallback((rawMessage) => {
-                const index = rawMessage.index;
-                if ('end' in rawMessage) {
-                    if (index == __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")) {
-                        this.cleanupCallback();
-                    }
-                    else {
-                        __classPrivateFieldSet(this, _Channel_messageEndIndex, index, "f");
-                    }
-                    return;
-                }
-                const message = rawMessage.message;
-                // Process the message if we're at the right order
-                if (index == __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")) {
-                    __classPrivateFieldGet(this, _Channel_onmessage, "f").call(this, message);
-                    __classPrivateFieldSet(this, _Channel_nextMessageIndex, __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") + 1, "f");
-                    // process pending messages
-                    while (__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") in __classPrivateFieldGet(this, _Channel_pendingMessages, "f")) {
-                        const message = __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")];
-                        __classPrivateFieldGet(this, _Channel_onmessage, "f").call(this, message);
-                        // eslint-disable-next-line @typescript-eslint/no-array-delete
-                        delete __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f")];
-                        __classPrivateFieldSet(this, _Channel_nextMessageIndex, __classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") + 1, "f");
-                    }
-                    if (__classPrivateFieldGet(this, _Channel_nextMessageIndex, "f") === __classPrivateFieldGet(this, _Channel_messageEndIndex, "f")) {
-                        this.cleanupCallback();
-                    }
-                }
-                // Queue the message if we're not
-                else {
-                    // eslint-disable-next-line security/detect-object-injection
-                    __classPrivateFieldGet(this, _Channel_pendingMessages, "f")[index] = message;
-                }
-            });
-        }
-        cleanupCallback() {
-            Reflect.deleteProperty(window, `_${this.id}`);
-        }
-        set onmessage(handler) {
-            __classPrivateFieldSet(this, _Channel_onmessage, handler, "f");
-        }
-        get onmessage() {
-            return __classPrivateFieldGet(this, _Channel_onmessage, "f");
-        }
-        [(_Channel_onmessage = new WeakMap(), _Channel_nextMessageIndex = new WeakMap(), _Channel_pendingMessages = new WeakMap(), _Channel_messageEndIndex = new WeakMap(), SERIALIZE_TO_IPC_FN)]() {
-            return `__CHANNEL__:${this.id}`;
-        }
-        toJSON() {
-            // eslint-disable-next-line security/detect-object-injection
-            return this[SERIALIZE_TO_IPC_FN]();
-        }
-    }
     /**
      * Sends a message to the backend.
      * @example
@@ -711,417 +567,6 @@ var app = (function () {
      */
     async function invoke(cmd, args = {}, options) {
         return window.__TAURI_INTERNALS__.invoke(cmd, args, options);
-    }
-
-    // Copyright 2019-2023 Tauri Programme within The Commons Conservancy
-    // SPDX-License-Identifier: Apache-2.0
-    // SPDX-License-Identifier: MIT
-    /**
-     * Access the system shell.
-     * Allows you to spawn child processes and manage files and URLs using their default application.
-     *
-     * ## Security
-     *
-     * This API has a scope configuration that forces you to restrict the programs and arguments that can be used.
-     *
-     * ### Restricting access to the {@link open | `open`} API
-     *
-     * On the configuration object, `open: true` means that the {@link open} API can be used with any URL,
-     * as the argument is validated with the `^((mailto:\w+)|(tel:\w+)|(https?://\w+)).+` regex.
-     * You can change that regex by changing the boolean value to a string, e.g. `open: ^https://github.com/`.
-     *
-     * ### Restricting access to the {@link Command | `Command`} APIs
-     *
-     * The plugin permissions object has a `scope` field that defines an array of CLIs that can be used.
-     * Each CLI is a configuration object `{ name: string, cmd: string, sidecar?: bool, args?: boolean | Arg[] }`.
-     *
-     * - `name`: the unique identifier of the command, passed to the {@link Command.create | Command.create function}.
-     * If it's a sidecar, this must be the value defined on `tauri.conf.json > bundle > externalBin`.
-     * - `cmd`: the program that is executed on this configuration. If it's a sidecar, this value is ignored.
-     * - `sidecar`: whether the object configures a sidecar or a system program.
-     * - `args`: the arguments that can be passed to the program. By default no arguments are allowed.
-     *   - `true` means that any argument list is allowed.
-     *   - `false` means that no arguments are allowed.
-     *   - otherwise an array can be configured. Each item is either a string representing the fixed argument value
-     *     or a `{ validator: string }` that defines a regex validating the argument value.
-     *
-     * #### Example scope configuration
-     *
-     * CLI: `git commit -m "the commit message"`
-     *
-     * Capability:
-     * ```json
-     * {
-     *   "permissions": [
-     *     {
-     *       "identifier": "shell:allow-execute",
-     *       "allow": [
-     *         {
-     *           "name": "run-git-commit",
-     *           "cmd": "git",
-     *           "args": ["commit", "-m", { "validator": "\\S+" }]
-     *         }
-     *       ]
-     *     }
-     *   ]
-     * }
-     * ```
-     * Usage:
-     * ```typescript
-     * import { Command } from '@tauri-apps/plugin-shell'
-     * Command.create('run-git-commit', ['commit', '-m', 'the commit message'])
-     * ```
-     *
-     * Trying to execute any API with a program not configured on the scope results in a promise rejection due to denied access.
-     *
-     * @module
-     */
-    /**
-     * @since 2.0.0
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    class EventEmitter {
-        constructor() {
-            /** @ignore */
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
-            this.eventListeners = Object.create(null);
-        }
-        /**
-         * Alias for `emitter.on(eventName, listener)`.
-         *
-         * @since 2.0.0
-         */
-        addListener(eventName, listener) {
-            return this.on(eventName, listener);
-        }
-        /**
-         * Alias for `emitter.off(eventName, listener)`.
-         *
-         * @since 2.0.0
-         */
-        removeListener(eventName, listener) {
-            return this.off(eventName, listener);
-        }
-        /**
-         * Adds the `listener` function to the end of the listeners array for the
-         * event named `eventName`. No checks are made to see if the `listener` has
-         * already been added. Multiple calls passing the same combination of `eventName`and `listener` will result in the `listener` being added, and called, multiple
-         * times.
-         *
-         * Returns a reference to the `EventEmitter`, so that calls can be chained.
-         *
-         * @since 2.0.0
-         */
-        on(eventName, listener) {
-            if (eventName in this.eventListeners) {
-                // eslint-disable-next-line security/detect-object-injection
-                this.eventListeners[eventName].push(listener);
-            }
-            else {
-                // eslint-disable-next-line security/detect-object-injection
-                this.eventListeners[eventName] = [listener];
-            }
-            return this;
-        }
-        /**
-         * Adds a **one-time**`listener` function for the event named `eventName`. The
-         * next time `eventName` is triggered, this listener is removed and then invoked.
-         *
-         * Returns a reference to the `EventEmitter`, so that calls can be chained.
-         *
-         * @since 2.0.0
-         */
-        once(eventName, listener) {
-            const wrapper = (arg) => {
-                this.removeListener(eventName, wrapper);
-                listener(arg);
-            };
-            return this.addListener(eventName, wrapper);
-        }
-        /**
-         * Removes the all specified listener from the listener array for the event eventName
-         * Returns a reference to the `EventEmitter`, so that calls can be chained.
-         *
-         * @since 2.0.0
-         */
-        off(eventName, listener) {
-            if (eventName in this.eventListeners) {
-                // eslint-disable-next-line security/detect-object-injection
-                this.eventListeners[eventName] = this.eventListeners[eventName].filter((l) => l !== listener);
-            }
-            return this;
-        }
-        /**
-         * Removes all listeners, or those of the specified eventName.
-         *
-         * Returns a reference to the `EventEmitter`, so that calls can be chained.
-         *
-         * @since 2.0.0
-         */
-        removeAllListeners(event) {
-            if (event) {
-                // eslint-disable-next-line security/detect-object-injection
-                delete this.eventListeners[event];
-            }
-            else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                this.eventListeners = Object.create(null);
-            }
-            return this;
-        }
-        /**
-         * @ignore
-         * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
-         * to each.
-         *
-         * @returns `true` if the event had listeners, `false` otherwise.
-         *
-         * @since 2.0.0
-         */
-        emit(eventName, arg) {
-            if (eventName in this.eventListeners) {
-                // eslint-disable-next-line security/detect-object-injection
-                const listeners = this.eventListeners[eventName];
-                for (const listener of listeners)
-                    listener(arg);
-                return true;
-            }
-            return false;
-        }
-        /**
-         * Returns the number of listeners listening to the event named `eventName`.
-         *
-         * @since 2.0.0
-         */
-        listenerCount(eventName) {
-            if (eventName in this.eventListeners)
-                // eslint-disable-next-line security/detect-object-injection
-                return this.eventListeners[eventName].length;
-            return 0;
-        }
-        /**
-         * Adds the `listener` function to the _beginning_ of the listeners array for the
-         * event named `eventName`. No checks are made to see if the `listener` has
-         * already been added. Multiple calls passing the same combination of `eventName`and `listener` will result in the `listener` being added, and called, multiple
-         * times.
-         *
-         * Returns a reference to the `EventEmitter`, so that calls can be chained.
-         *
-         * @since 2.0.0
-         */
-        prependListener(eventName, listener) {
-            if (eventName in this.eventListeners) {
-                // eslint-disable-next-line security/detect-object-injection
-                this.eventListeners[eventName].unshift(listener);
-            }
-            else {
-                // eslint-disable-next-line security/detect-object-injection
-                this.eventListeners[eventName] = [listener];
-            }
-            return this;
-        }
-        /**
-         * Adds a **one-time**`listener` function for the event named `eventName` to the_beginning_ of the listeners array. The next time `eventName` is triggered, this
-         * listener is removed, and then invoked.
-         *
-         * Returns a reference to the `EventEmitter`, so that calls can be chained.
-         *
-         * @since 2.0.0
-         */
-        prependOnceListener(eventName, listener) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const wrapper = (arg) => {
-                this.removeListener(eventName, wrapper);
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                listener(arg);
-            };
-            return this.prependListener(eventName, wrapper);
-        }
-    }
-    /**
-     * @since 2.0.0
-     */
-    class Child {
-        constructor(pid) {
-            this.pid = pid;
-        }
-        /**
-         * Writes `data` to the `stdin`.
-         *
-         * @param data The message to write, either a string or a byte array.
-         * @example
-         * ```typescript
-         * import { Command } from '@tauri-apps/plugin-shell';
-         * const command = Command.create('node');
-         * const child = await command.spawn();
-         * await child.write('message');
-         * await child.write([0, 1, 2, 3, 4, 5]);
-         * ```
-         *
-         * @returns A promise indicating the success or failure of the operation.
-         *
-         * @since 2.0.0
-         */
-        async write(data) {
-            await invoke('plugin:shell|stdin_write', {
-                pid: this.pid,
-                buffer: data
-            });
-        }
-        /**
-         * Kills the child process.
-         *
-         * @returns A promise indicating the success or failure of the operation.
-         *
-         * @since 2.0.0
-         */
-        async kill() {
-            await invoke('plugin:shell|kill', {
-                cmd: 'killChild',
-                pid: this.pid
-            });
-        }
-    }
-    /**
-     * The entry point for spawning child processes.
-     * It emits the `close` and `error` events.
-     * @example
-     * ```typescript
-     * import { Command } from '@tauri-apps/plugin-shell';
-     * const command = Command.create('node');
-     * command.on('close', data => {
-     *   console.log(`command finished with code ${data.code} and signal ${data.signal}`)
-     * });
-     * command.on('error', error => console.error(`command error: "${error}"`));
-     * command.stdout.on('data', line => console.log(`command stdout: "${line}"`));
-     * command.stderr.on('data', line => console.log(`command stderr: "${line}"`));
-     *
-     * const child = await command.spawn();
-     * console.log('pid:', child.pid);
-     * ```
-     *
-     * @since 2.0.0
-     *
-     */
-    class Command extends EventEmitter {
-        /**
-         * @ignore
-         * Creates a new `Command` instance.
-         *
-         * @param program The program name to execute.
-         * It must be configured on `tauri.conf.json > plugins > shell > scope`.
-         * @param args Program arguments.
-         * @param options Spawn options.
-         */
-        constructor(program, args = [], options) {
-            super();
-            /** Event emitter for the `stdout`. Emits the `data` event. */
-            this.stdout = new EventEmitter();
-            /** Event emitter for the `stderr`. Emits the `data` event. */
-            this.stderr = new EventEmitter();
-            this.program = program;
-            this.args = typeof args === 'string' ? [args] : args;
-            this.options = options ?? {};
-        }
-        /**
-         * Creates a command to execute the given program.
-         * @example
-         * ```typescript
-         * import { Command } from '@tauri-apps/plugin-shell';
-         * const command = Command.create('my-app', ['run', 'tauri']);
-         * const output = await command.execute();
-         * ```
-         *
-         * @param program The program to execute.
-         * It must be configured on `tauri.conf.json > plugins > shell > scope`.
-         */
-        static create(program, args = [], options) {
-            return new Command(program, args, options);
-        }
-        /**
-         * Creates a command to execute the given sidecar program.
-         * @example
-         * ```typescript
-         * import { Command } from '@tauri-apps/plugin-shell';
-         * const command = Command.sidecar('my-sidecar');
-         * const output = await command.execute();
-         * ```
-         *
-         * @param program The program to execute.
-         * It must be configured on `tauri.conf.json > plugins > shell > scope`.
-         */
-        static sidecar(program, args = [], options) {
-            const instance = new Command(program, args, options);
-            instance.options.sidecar = true;
-            return instance;
-        }
-        /**
-         * Executes the command as a child process, returning a handle to it.
-         *
-         * @returns A promise resolving to the child process handle.
-         *
-         * @since 2.0.0
-         */
-        async spawn() {
-            const program = this.program;
-            const args = this.args;
-            const options = this.options;
-            if (typeof args === 'object') {
-                Object.freeze(args);
-            }
-            const onEvent = new Channel();
-            onEvent.onmessage = (event) => {
-                switch (event.event) {
-                    case 'Error':
-                        this.emit('error', event.payload);
-                        break;
-                    case 'Terminated':
-                        this.emit('close', event.payload);
-                        break;
-                    case 'Stdout':
-                        this.stdout.emit('data', event.payload);
-                        break;
-                    case 'Stderr':
-                        this.stderr.emit('data', event.payload);
-                        break;
-                }
-            };
-            return await invoke('plugin:shell|spawn', {
-                program,
-                args,
-                options,
-                onEvent
-            }).then((pid) => new Child(pid));
-        }
-        /**
-         * Executes the command as a child process, waiting for it to finish and collecting all of its output.
-         * @example
-         * ```typescript
-         * import { Command } from '@tauri-apps/plugin-shell';
-         * const output = await Command.create('echo', 'message').execute();
-         * assert(output.code === 0);
-         * assert(output.signal === null);
-         * assert(output.stdout === 'message');
-         * assert(output.stderr === '');
-         * ```
-         *
-         * @returns A promise resolving to the child process output.
-         *
-         * @since 2.0.0
-         */
-        async execute() {
-            const program = this.program;
-            const args = this.args;
-            const options = this.options;
-            if (typeof args === 'object') {
-                Object.freeze(args);
-            }
-            return await invoke('plugin:shell|execute', {
-                program,
-                args,
-                options
-            });
-        }
     }
 
     var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -11349,7 +10794,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (770:8) {#if selectedShape}
+    // (769:8) {#if selectedShape}
     function create_if_block$_1(ctx) {
     	let if_block$_anchor$;
 
@@ -11394,14 +10839,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(770:8) {#if selectedShape}",
+    		source: "(769:8) {#if selectedShape}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (786:12) {:else}
+    // (785:12) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -11435,30 +10880,30 @@ var app = (function () {
     			input1$ = element("input");
     			t5$ = space();
     			label2$ = element("label");
-    			label2$.textContent = "Use {input} to reference the previous node's\n                    output";
+    			label2$.textContent = "Use $INPUT to reference the previous node's output";
     			t7$ = space();
     			label3$ = element("label");
     			label3$.textContent = "Output:";
     			t9$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-101uug8");
-    			add_location(h3$, file$, 786, 16, 31337);
+    			add_location(h3$, file$, 785, 16, 31349);
     			attr_dev(input0$, "class", "svelte-101uug8");
-    			add_location(input0$, file$, 787, 29, 31382);
+    			add_location(input0$, file$, 786, 29, 31394);
     			attr_dev(label0$, "class", "svelte-101uug8");
-    			add_location(label0$, file$, 787, 16, 31369);
+    			add_location(label0$, file$, 786, 16, 31381);
     			attr_dev(input1$, "class", "svelte-101uug8");
-    			add_location(input1$, file$, 789, 29, 31484);
+    			add_location(input1$, file$, 788, 29, 31496);
     			attr_dev(label1$, "class", "svelte-101uug8");
-    			add_location(label1$, file$, 788, 16, 31448);
+    			add_location(label1$, file$, 787, 16, 31460);
     			attr_dev(label2$, "class", "hint svelte-101uug8");
-    			add_location(label2$, file$, 791, 16, 31570);
+    			add_location(label2$, file$, 790, 16, 31582);
     			attr_dev(label3$, "class", "svelte-101uug8");
-    			add_location(label3$, file$, 795, 16, 31734);
+    			add_location(label3$, file$, 793, 16, 31715);
     			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-101uug8");
-    			add_location(textarea$, file$, 796, 16, 31773);
+    			add_location(textarea$, file$, 794, 16, 31754);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11524,14 +10969,14 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(786:12) {:else}",
+    		source: "(785:12) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (777:54) 
+    // (776:54) 
     function create_if_block$_3(ctx) {
     	let h3$;
     	let t1$;
@@ -11560,15 +11005,15 @@ var app = (function () {
     			t6$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-101uug8");
-    			add_location(h3$, file$, 777, 16, 31016);
+    			add_location(h3$, file$, 776, 16, 31028);
     			attr_dev(label0$, "class", "svelte-101uug8");
-    			add_location(label0$, file$, 778, 16, 31048);
+    			add_location(label0$, file$, 777, 16, 31060);
     			attr_dev(label1$, "class", "svelte-101uug8");
-    			add_location(label1$, file$, 779, 16, 31106);
+    			add_location(label1$, file$, 778, 16, 31118);
     			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-101uug8");
-    			add_location(textarea$, file$, 780, 16, 31145);
+    			add_location(textarea$, file$, 779, 16, 31157);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11611,14 +11056,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_3.name,
     		type: "if",
-    		source: "(777:54) ",
+    		source: "(776:54) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (771:12) {#if selectedShape.role === "input"}
+    // (770:12) {#if selectedShape.role === "input"}
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
@@ -11647,14 +11092,14 @@ var app = (function () {
     			t6$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-101uug8");
-    			add_location(h3$, file$, 771, 16, 30733);
+    			add_location(h3$, file$, 770, 16, 30745);
     			attr_dev(label0$, "class", "svelte-101uug8");
-    			add_location(label0$, file$, 772, 16, 30764);
+    			add_location(label0$, file$, 771, 16, 30776);
     			attr_dev(label1$, "class", "svelte-101uug8");
-    			add_location(label1$, file$, 773, 16, 30822);
+    			add_location(label1$, file$, 772, 16, 30834);
     			attr_dev(textarea$, "rows", "5");
     			attr_dev(textarea$, "class", "svelte-101uug8");
-    			add_location(textarea$, file$, 774, 16, 30860);
+    			add_location(textarea$, file$, 773, 16, 30872);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11697,14 +11142,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(771:12) {#if selectedShape.role === \\\"input\\\"}",
+    		source: "(770:12) {#if selectedShape.role === \\\"input\\\"}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (809:12) {#if label.name}
+    // (807:12) {#if label.name}
     function create_if_block$(ctx) {
     	let div$;
     	let t0$_value$ = /*label*/ ctx[24].name + "";
@@ -11719,7 +11164,7 @@ var app = (function () {
     			attr_dev(div$, "class", "node-label svelte-101uug8");
     			set_style(div$, "left", /*label*/ ctx[24].x + "px");
     			set_style(div$, "top", /*label*/ ctx[24].y + "px");
-    			add_location(div$, file$, 809, 16, 32137);
+    			add_location(div$, file$, 807, 16, 32118);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
@@ -11746,14 +11191,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(809:12) {#if label.name}",
+    		source: "(807:12) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (808:8) {#each labels as label, i (i)}
+    // (806:8) {#each labels as label, i (i)}
     function create_each_block$(key$_1, ctx) {
     	let first$;
     	let if_block$_anchor$;
@@ -11800,7 +11245,7 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$.name,
     		type: "each",
-    		source: "(808:8) {#each labels as label, i (i)}",
+    		source: "(806:8) {#each labels as label, i (i)}",
     		ctx
     	});
 
@@ -11865,23 +11310,23 @@ var app = (function () {
     			button2$ = element("button");
     			t7$ = text("Stop");
     			attr_dev(div0$, "class", "info-panel svelte-101uug8");
-    			add_location(div0$, file$, 768, 4, 30615);
+    			add_location(div0$, file$, 767, 4, 30627);
     			attr_dev(canvas$, "class", "svelte-101uug8");
-    			add_location(canvas$, file$, 806, 8, 32016);
+    			add_location(canvas$, file$, 804, 8, 31997);
     			attr_dev(div1$, "class", "canvas-container svelte-101uug8");
-    			add_location(div1$, file$, 805, 4, 31977);
+    			add_location(div1$, file$, 803, 4, 31958);
     			attr_dev(button0$, "class", "svelte-101uug8");
-    			add_location(button0$, file$, 820, 8, 32401);
+    			add_location(button0$, file$, 818, 8, 32382);
     			button1$.disabled = /*isRunning*/ ctx[3];
     			attr_dev(button1$, "class", "svelte-101uug8");
-    			add_location(button1$, file$, 821, 8, 32456);
+    			add_location(button1$, file$, 819, 8, 32437);
     			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[3];
     			attr_dev(button2$, "class", "svelte-101uug8");
-    			add_location(button2$, file$, 822, 8, 32531);
+    			add_location(button2$, file$, 820, 8, 32512);
     			attr_dev(div2$, "class", "controls svelte-101uug8");
-    			add_location(div2$, file$, 819, 4, 32370);
+    			add_location(div2$, file$, 817, 4, 32351);
     			attr_dev(div3$, "class", "app-wrap svelte-101uug8");
-    			add_location(div3$, file$, 767, 0, 30588);
+    			add_location(div3$, file$, 766, 0, 30600);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -12676,14 +12121,17 @@ var app = (function () {
     		return cur === outputNode ? nodes : [];
     	}
 
-    	async function runCommand(input) {
+    	async function runCommand(stdin, cmd) {
+    		let result = "";
+
     		try {
-    			const output = await Command.create("exec-sh", ["-c", input]).execute();
-    			return output.stdout;
-    		} catch(e) {
-    			console.error("Shell command error:", e);
-    			return `Error executing command: ${e.message}`;
+    			result = await invoke("run_command", { stdin, cmd });
+    			console.log(`Command executed: ${cmd} with result:`, result);
+    		} catch(error) {
+    			result = `Error here: ${error}`;
     		}
+
+    		return result;
     	}
 
     	// async function runCommand(cmd, input) {
@@ -12750,8 +12198,8 @@ var app = (function () {
     				// Replace template variable {input} with output from previous node
     				const cmd = node.command.replace(/\{input\}/g, data);
 
-    				console.log(`Running command on node ${node.name}: ${cmd}`);
-    				data = await runCommand(cmd);
+    				console.log(`Running command on node ${node.name}: ${cmd} with stdin: ${data}`);
+    				data = await runCommand(data, cmd);
     				console.log("Command output:", data);
 
     				// Store and show intermediate output
@@ -12816,7 +12264,7 @@ var app = (function () {
     	}
 
     	$$self.$capture_state = () => ({
-    		Command,
+    		invoke,
     		reglLib: regl,
     		onMount,
     		canvas,

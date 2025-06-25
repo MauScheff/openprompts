@@ -760,7 +760,7 @@
         let data = scene.find((s) => s.role === "input").inputText;
         // Prepare environment variable prefix from input node
         const inputNode = scene.find((s) => s.role === "input");
-        const envVars = inputNode.envVars || [];
+        const envVars = (inputNode.envVars || []).filter(e => e.key && e.value);
         let envPrefix = "";
         if (envVars.length > 0) {
             envPrefix = envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; ";
@@ -836,27 +836,30 @@
                 <label>Environment Variables:</label>
                 {#each selectedShape.envVars as env, idx (idx)}
                     <div class="env-row">
-                        <input
-                            placeholder="Key"
-                            bind:value={env.key}
-                            on:input={() => (scene = [...scene])}
-                        />
-                        <input
+                        <div class="env-key-row">
+                            <input
+                                placeholder="Key"
+                                bind:value={env.key}
+                                on:input={() => (scene = [...scene])}
+                            />
+                            <button class="copy-button"
+                                on:click={() => {
+                                    selectedShape.envVars.splice(idx, 1);
+                                    scene = [...scene];
+                                }}
+                            >
+                                Remove
+                            </button>
+                        </div>
+                        <textarea
                             placeholder="Value"
+                            rows="3"
                             bind:value={env.value}
                             on:input={() => (scene = [...scene])}
-                        />
-                        <button
-                            on:click={() => {
-                                selectedShape.envVars.splice(idx, 1);
-                                scene = [...scene];
-                            }}
-                        >
-                            Remove
-                        </button>
+                        ></textarea>
                     </div>
                 {/each}
-                <button
+                <button class="copy-button"
                     on:click={() => {
                         selectedShape.envVars = selectedShape.envVars || [];
                         selectedShape.envVars.push({ key: "", value: "" });
@@ -885,7 +888,7 @@
                     bind:value={selectedShape.command}
                 ></textarea>
                 <label class="hint"
-                    >Use environment variables defined on the input node (eg. $OPEN_AI_API_KEY)</label
+                    >Define variables in the input node.</label
                 >
                 <label>Output:</label>
                 <button class="copy-button" on:click={copyOutput}>Copy</button>
@@ -1113,5 +1116,28 @@
     }
     .resizer:hover {
         background-color: rgba(0, 0, 0, 0.1);
+    }
+    /* Layout, spacing, and separators for environment variable rows */
+    .info-panel .env-row {
+        margin-bottom: 16px;
+    }
+    /* Separator line between each variable (not after last) */
+    .info-panel .env-row:not(:last-child) {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding-bottom: 12px;
+    }
+    .info-panel .env-row .env-key-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .info-panel .env-row .env-key-row input {
+        flex: 1;
+    }
+    .info-panel .env-row textarea {
+        width: 100%;
+        margin-top: 4px;
+        margin-bottom: 0;
+        resize: vertical;
     }
 </style>

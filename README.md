@@ -2,8 +2,8 @@
 
 WIP: Documentation in process...
 
-    install rustup.
-    
+# Setup
+install rustup.    
     1. Run `npm install` to pull in Vite, @sveltejs/vite-plugin-svelte and @tauri-apps packages.
     2. During development:
        • `npm run dev` to start Vite’s dev server.
@@ -12,5 +12,6 @@ WIP: Documentation in process...
        • `npm run build` to produce a `dist/` folder.
        • `npm run tauri:build` to package your desktop app.
 
+# Notes
 your env should have OPENAI_API_KEY      
 

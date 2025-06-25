@@ -24,6 +24,7 @@
             color: ioColor,
             selected: false,
             inputText: "",
+            envVars: [],
             name: "Input",
             highlight: false,
         },
@@ -46,6 +47,12 @@
             try {
                 const parsed = JSON.parse(saved);
                 const circles = parsed.filter((s) => s.type === "circle");
+                // Ensure input node has envVars property
+                circles.forEach((s) => {
+                    if (s.role === "input" && s.envVars == null) {
+                        s.envVars = [];
+                    }
+                });
                 const edgesRaw = parsed.filter((s) => s.type === "edge");
                 scene = [...circles];
                 edgesRaw.forEach((e) => {
@@ -751,6 +758,13 @@
         isRunning = true;
         abort = false;
         let data = scene.find((s) => s.role === "input").inputText;
+        // Prepare environment variable prefix from input node
+        const inputNode = scene.find((s) => s.role === "input");
+        const envVars = inputNode.envVars || [];
+        let envPrefix = "";
+        if (envVars.length > 0) {
+            envPrefix = envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; ";
+        }
         for (let i = 0; i < nodes.length && !abort; i++) {
             // Clear previous highlights and selections so info follows the play
             scene.forEach((s) => {
@@ -771,7 +785,8 @@
             }
             if (node.role === "default") {
                 // Replace template variable {input} with output from previous node
-                const cmd = node.command.replace(/\{input\}/g, data);                
+                const rawCmd = node.command.replace(/\{input\}/g, data);
+                const cmd = envPrefix ? `${envPrefix}${rawCmd}` : rawCmd;
                 console.log(`Running command on node ${node.name}: ${cmd} with stdin: ${data}`);
                 data = await runCommand(data, cmd);
                 console.log("Command output:", data);
@@ -817,8 +832,39 @@
                 <h3>Input</h3>
                 <label>Name: {selectedShape.name}</label>
                 <label>Input:</label>
-                <textarea rows="5" bind:value={selectedShape.inputText}
-                ></textarea>
+                <textarea rows="5" bind:value={selectedShape.inputText}></textarea>
+                <label>Environment Variables:</label>
+                {#each selectedShape.envVars as env, idx (idx)}
+                    <div class="env-row">
+                        <input
+                            placeholder="Key"
+                            bind:value={env.key}
+                            on:input={() => (scene = [...scene])}
+                        />
+                        <input
+                            placeholder="Value"
+                            bind:value={env.value}
+                            on:input={() => (scene = [...scene])}
+                        />
+                        <button
+                            on:click={() => {
+                                selectedShape.envVars.splice(idx, 1);
+                                scene = [...scene];
+                            }}
+                        >
+                            Remove
+                        </button>
+                    </div>
+                {/each}
+                <button
+                    on:click={() => {
+                        selectedShape.envVars = selectedShape.envVars || [];
+                        selectedShape.envVars.push({ key: "", value: "" });
+                        scene = [...scene];
+                    }}
+                >
+                    Add Variable
+                </button>
             {:else if selectedShape.role === "output"}
                 <h3>Output</h3>
                 <label>Name: {selectedShape.name}</label>
@@ -832,14 +878,14 @@
             {:else}
                 <h3>Prompt</h3>
                 <label>Name: <input bind:value={selectedShape.name} /></label>
-                <label>Prompt:</label>
+                <label>Command:</label>
                 <textarea
                     rows="10"
                     class="command-input"
                     bind:value={selectedShape.command}
                 ></textarea>
                 <label class="hint"
-                    >Use $INPUT to reference the previous node's output</label
+                    >Use environment variables defined on the input node (eg. $OPEN_AI_API_KEY)</label
                 >
                 <label>Output:</label>
                 <button class="copy-button" on:click={copyOutput}>Copy</button>

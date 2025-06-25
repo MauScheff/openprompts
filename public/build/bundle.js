@@ -10789,18 +10789,26 @@ var app = (function () {
 
     function get_each_context$(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[32] = list[i];
-    	child_ctx[34] = i;
+    	child_ctx[38] = list[i];
+    	child_ctx[40] = i;
     	return child_ctx;
     }
 
-    // (815:8) {#if selectedShape}
+    function get_each_context$_1(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[41] = list[i];
+    	child_ctx[42] = list;
+    	child_ctx[43] = i;
+    	return child_ctx;
+    }
+
+    // (830:8) {#if selectedShape}
     function create_if_block$_1(ctx) {
     	let if_block$_anchor$;
 
     	function select_block_type$(ctx, dirty) {
-    		if (/*selectedShape*/ ctx[3].role === "input") return create_if_block$_2;
-    		if (/*selectedShape*/ ctx[3].role === "output") return create_if_block$_3;
+    		if (/*selectedShape*/ ctx[4].role === "input") return create_if_block$_2;
+    		if (/*selectedShape*/ ctx[4].role === "output") return create_if_block$_3;
     		return create_else_block$;
     	}
 
@@ -10839,14 +10847,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(815:8) {#if selectedShape}",
+    		source: "(830:8) {#if selectedShape}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (832:12) {:else}
+    // (878:12) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -10878,12 +10886,12 @@ var app = (function () {
     			input$ = element("input");
     			t3$ = space();
     			label1$ = element("label");
-    			label1$.textContent = "Prompt:";
+    			label1$.textContent = "Command:";
     			t5$ = space();
     			textarea0$ = element("textarea");
     			t6$ = space();
     			label2$ = element("label");
-    			label2$.textContent = "Use $INPUT to reference the previous node's output";
+    			label2$.textContent = "Use environment variables defined on the input node (eg. $OPEN_AI_API_KEY)";
     			t8$ = space();
     			label3$ = element("label");
     			label3$.textContent = "Output:";
@@ -10893,26 +10901,26 @@ var app = (function () {
     			t12$ = space();
     			textarea1$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1mvy60t");
-    			add_location(h3$, file$, 832, 16, 33094);
+    			add_location(h3$, file$, 878, 16, 35085);
     			attr_dev(input$, "class", "svelte-1mvy60t");
-    			add_location(input$, file$, 833, 29, 33139);
+    			add_location(input$, file$, 879, 29, 35130);
     			attr_dev(label0$, "class", "svelte-1mvy60t");
-    			add_location(label0$, file$, 833, 16, 33126);
+    			add_location(label0$, file$, 879, 16, 35117);
     			attr_dev(label1$, "class", "svelte-1mvy60t");
-    			add_location(label1$, file$, 834, 16, 33205);
+    			add_location(label1$, file$, 880, 16, 35196);
     			attr_dev(textarea0$, "rows", "10");
     			attr_dev(textarea0$, "class", "command-input svelte-1mvy60t");
-    			add_location(textarea0$, file$, 835, 16, 33244);
+    			add_location(textarea0$, file$, 881, 16, 35236);
     			attr_dev(label2$, "class", "hint svelte-1mvy60t");
-    			add_location(label2$, file$, 840, 16, 33426);
+    			add_location(label2$, file$, 886, 16, 35418);
     			attr_dev(label3$, "class", "svelte-1mvy60t");
-    			add_location(label3$, file$, 843, 16, 33559);
+    			add_location(label3$, file$, 889, 16, 35575);
     			attr_dev(button$, "class", "copy-button svelte-1mvy60t");
-    			add_location(button$, file$, 844, 16, 33598);
+    			add_location(button$, file$, 890, 16, 35614);
     			attr_dev(textarea1$, "rows", "20");
     			textarea1$.readOnly = true;
     			attr_dev(textarea1$, "class", "svelte-1mvy60t");
-    			add_location(textarea1$, file$, 845, 16, 33678);
+    			add_location(textarea1$, file$, 891, 16, 35694);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -10920,12 +10928,12 @@ var app = (function () {
     			insert_dev(target, label0$, anchor);
     			append_dev(label0$, t2$);
     			append_dev(label0$, input$);
-    			set_input_value(input$, /*selectedShape*/ ctx[3].name);
+    			set_input_value(input$, /*selectedShape*/ ctx[4].name);
     			insert_dev(target, t3$, anchor);
     			insert_dev(target, label1$, anchor);
     			insert_dev(target, t5$, anchor);
     			insert_dev(target, textarea0$, anchor);
-    			set_input_value(textarea0$, /*selectedShape*/ ctx[3].command);
+    			set_input_value(textarea0$, /*selectedShape*/ ctx[4].command);
     			insert_dev(target, t6$, anchor);
     			insert_dev(target, label2$, anchor);
     			insert_dev(target, t8$, anchor);
@@ -10934,30 +10942,30 @@ var app = (function () {
     			insert_dev(target, button$, anchor);
     			insert_dev(target, t12$, anchor);
     			insert_dev(target, textarea1$, anchor);
-    			set_input_value(textarea1$, /*selectedShape*/ ctx[3].outputText);
+    			set_input_value(textarea1$, /*selectedShape*/ ctx[4].outputText);
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(input$, "input", /*input$_input_handler$*/ ctx[15]),
-    					listen_dev(textarea0$, "input", /*textarea0$_input_handler$*/ ctx[16]),
-    					listen_dev(button$, "click", /*copyOutput*/ ctx[9], false, false, false, false),
-    					listen_dev(textarea1$, "input", /*textarea1$_input_handler$*/ ctx[17])
+    					listen_dev(input$, "input", /*input$_input_handler$*/ ctx[21]),
+    					listen_dev(textarea0$, "input", /*textarea0$_input_handler$*/ ctx[22]),
+    					listen_dev(button$, "click", /*copyOutput*/ ctx[10], false, false, false, false),
+    					listen_dev(textarea1$, "input", /*textarea1$_input_handler$*/ ctx[23])
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*selectedShape*/ 8 && input$.value !== /*selectedShape*/ ctx[3].name) {
-    				set_input_value(input$, /*selectedShape*/ ctx[3].name);
+    			if (dirty[0] & /*selectedShape*/ 16 && input$.value !== /*selectedShape*/ ctx[4].name) {
+    				set_input_value(input$, /*selectedShape*/ ctx[4].name);
     			}
 
-    			if (dirty[0] & /*selectedShape*/ 8) {
-    				set_input_value(textarea0$, /*selectedShape*/ ctx[3].command);
+    			if (dirty[0] & /*selectedShape*/ 16) {
+    				set_input_value(textarea0$, /*selectedShape*/ ctx[4].command);
     			}
 
-    			if (dirty[0] & /*selectedShape*/ 8) {
-    				set_input_value(textarea1$, /*selectedShape*/ ctx[3].outputText);
+    			if (dirty[0] & /*selectedShape*/ 16) {
+    				set_input_value(textarea1$, /*selectedShape*/ ctx[4].outputText);
     			}
     		},
     		d: function destroy(detaching) {
@@ -10985,20 +10993,20 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(832:12) {:else}",
+    		source: "(878:12) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (822:54) 
+    // (868:54) 
     function create_if_block$_3(ctx) {
     	let h3$;
     	let t1$;
     	let label0$;
     	let t2$;
-    	let t3$_value$ = /*selectedShape*/ ctx[3].name + "";
+    	let t3$_value$ = /*selectedShape*/ ctx[4].name + "";
     	let t3$;
     	let t4$;
     	let label1$;
@@ -11026,17 +11034,17 @@ var app = (function () {
     			t8$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1mvy60t");
-    			add_location(h3$, file$, 822, 16, 32693);
+    			add_location(h3$, file$, 868, 16, 34684);
     			attr_dev(label0$, "class", "svelte-1mvy60t");
-    			add_location(label0$, file$, 823, 16, 32725);
+    			add_location(label0$, file$, 869, 16, 34716);
     			attr_dev(label1$, "class", "svelte-1mvy60t");
-    			add_location(label1$, file$, 824, 16, 32783);
+    			add_location(label1$, file$, 870, 16, 34774);
     			attr_dev(button$, "class", "copy-button svelte-1mvy60t");
-    			add_location(button$, file$, 825, 16, 32822);
+    			add_location(button$, file$, 871, 16, 34813);
     			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-1mvy60t");
-    			add_location(textarea$, file$, 826, 16, 32902);
+    			add_location(textarea$, file$, 872, 16, 34893);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11050,22 +11058,22 @@ var app = (function () {
     			insert_dev(target, button$, anchor);
     			insert_dev(target, t8$, anchor);
     			insert_dev(target, textarea$, anchor);
-    			set_input_value(textarea$, /*selectedShape*/ ctx[3].outputText);
+    			set_input_value(textarea$, /*selectedShape*/ ctx[4].outputText);
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(button$, "click", /*copyOutput*/ ctx[9], false, false, false, false),
-    					listen_dev(textarea$, "input", /*textarea$_input_handler$_1*/ ctx[14])
+    					listen_dev(button$, "click", /*copyOutput*/ ctx[10], false, false, false, false),
+    					listen_dev(textarea$, "input", /*textarea$_input_handler$_1*/ ctx[20])
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*selectedShape*/ 8 && t3$_value$ !== (t3$_value$ = /*selectedShape*/ ctx[3].name + "")) set_data_dev(t3$, t3$_value$);
+    			if (dirty[0] & /*selectedShape*/ 16 && t3$_value$ !== (t3$_value$ = /*selectedShape*/ ctx[4].name + "")) set_data_dev(t3$, t3$_value$);
 
-    			if (dirty[0] & /*selectedShape*/ 8) {
-    				set_input_value(textarea$, /*selectedShape*/ ctx[3].outputText);
+    			if (dirty[0] & /*selectedShape*/ 16) {
+    				set_input_value(textarea$, /*selectedShape*/ ctx[4].outputText);
     			}
     		},
     		d: function destroy(detaching) {
@@ -11087,27 +11095,44 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_3.name,
     		type: "if",
-    		source: "(822:54) ",
+    		source: "(868:54) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (816:12) {#if selectedShape.role === "input"}
+    // (831:12) {#if selectedShape.role === "input"}
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
     	let label0$;
     	let t2$;
-    	let t3$_value$ = /*selectedShape*/ ctx[3].name + "";
+    	let t3$_value$ = /*selectedShape*/ ctx[4].name + "";
     	let t3$;
     	let t4$;
     	let label1$;
     	let t6$;
     	let textarea$;
+    	let t7$;
+    	let label2$;
+    	let t9$;
+    	let each_blocks$ = [];
+    	let each$_lookup$ = new Map$();
+    	let t10$;
+    	let button$;
     	let mounted;
     	let dispose;
+    	let each_value$_1 = /*selectedShape*/ ctx[4].envVars;
+    	validate_each_argument(each_value$_1);
+    	const get_key$ = ctx => /*idx*/ ctx[43];
+    	validate_each_keys(ctx, each_value$_1, get_each_context$_1, get_key$);
+
+    	for (let i = 0; i < each_value$_1.length; i += 1) {
+    		let child_ctx = get_each_context$_1(ctx, each_value$_1, i);
+    		let key = get_key$(child_ctx);
+    		each$_lookup$.set(key, each_blocks$[i] = create_each_block$_1(key, child_ctx));
+    	}
 
     	const block$ = {
     		c: function create() {
@@ -11122,15 +11147,30 @@ var app = (function () {
     			label1$.textContent = "Input:";
     			t6$ = space();
     			textarea$ = element("textarea");
+    			t7$ = space();
+    			label2$ = element("label");
+    			label2$.textContent = "Environment Variables:";
+    			t9$ = space();
+
+    			for (let i = 0; i < each_blocks$.length; i += 1) {
+    				each_blocks$[i].c();
+    			}
+
+    			t10$ = space();
+    			button$ = element("button");
+    			button$.textContent = "Add Variable";
     			attr_dev(h3$, "class", "svelte-1mvy60t");
-    			add_location(h3$, file$, 816, 16, 32410);
+    			add_location(h3$, file$, 831, 16, 33080);
     			attr_dev(label0$, "class", "svelte-1mvy60t");
-    			add_location(label0$, file$, 817, 16, 32441);
+    			add_location(label0$, file$, 832, 16, 33111);
     			attr_dev(label1$, "class", "svelte-1mvy60t");
-    			add_location(label1$, file$, 818, 16, 32499);
+    			add_location(label1$, file$, 833, 16, 33169);
     			attr_dev(textarea$, "rows", "5");
     			attr_dev(textarea$, "class", "svelte-1mvy60t");
-    			add_location(textarea$, file$, 819, 16, 32537);
+    			add_location(textarea$, file$, 834, 16, 33207);
+    			attr_dev(label2$, "class", "svelte-1mvy60t");
+    			add_location(label2$, file$, 835, 16, 33291);
+    			add_location(button$, file$, 858, 16, 34270);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11142,18 +11182,41 @@ var app = (function () {
     			insert_dev(target, label1$, anchor);
     			insert_dev(target, t6$, anchor);
     			insert_dev(target, textarea$, anchor);
-    			set_input_value(textarea$, /*selectedShape*/ ctx[3].inputText);
+    			set_input_value(textarea$, /*selectedShape*/ ctx[4].inputText);
+    			insert_dev(target, t7$, anchor);
+    			insert_dev(target, label2$, anchor);
+    			insert_dev(target, t9$, anchor);
+
+    			for (let i = 0; i < each_blocks$.length; i += 1) {
+    				if (each_blocks$[i]) {
+    					each_blocks$[i].m(target, anchor);
+    				}
+    			}
+
+    			insert_dev(target, t10$, anchor);
+    			insert_dev(target, button$, anchor);
 
     			if (!mounted) {
-    				dispose = listen_dev(textarea$, "input", /*textarea$_input_handler$*/ ctx[13]);
+    				dispose = [
+    					listen_dev(textarea$, "input", /*textarea$_input_handler$*/ ctx[13]),
+    					listen_dev(button$, "click", /*click_handler$_1*/ ctx[19], false, false, false, false)
+    				];
+
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*selectedShape*/ 8 && t3$_value$ !== (t3$_value$ = /*selectedShape*/ ctx[3].name + "")) set_data_dev(t3$, t3$_value$);
+    			if (dirty[0] & /*selectedShape*/ 16 && t3$_value$ !== (t3$_value$ = /*selectedShape*/ ctx[4].name + "")) set_data_dev(t3$, t3$_value$);
 
-    			if (dirty[0] & /*selectedShape*/ 8) {
-    				set_input_value(textarea$, /*selectedShape*/ ctx[3].inputText);
+    			if (dirty[0] & /*selectedShape*/ 16) {
+    				set_input_value(textarea$, /*selectedShape*/ ctx[4].inputText);
+    			}
+
+    			if (dirty[0] & /*selectedShape, scene*/ 18) {
+    				each_value$_1 = /*selectedShape*/ ctx[4].envVars;
+    				validate_each_argument(each_value$_1);
+    				validate_each_keys(ctx, each_value$_1, get_each_context$_1, get_key$);
+    				each_blocks$ = update_keyed_each(each_blocks$, dirty, get_key$, 1, ctx, each_value$_1, each$_lookup$, t10$.parentNode, destroy_block, create_each_block$_1, t10$, get_each_context$_1);
     			}
     		},
     		d: function destroy(detaching) {
@@ -11164,8 +11227,18 @@ var app = (function () {
     			if (detaching) detach_dev(label1$);
     			if (detaching) detach_dev(t6$);
     			if (detaching) detach_dev(textarea$);
+    			if (detaching) detach_dev(t7$);
+    			if (detaching) detach_dev(label2$);
+    			if (detaching) detach_dev(t9$);
+
+    			for (let i = 0; i < each_blocks$.length; i += 1) {
+    				each_blocks$[i].d(detaching);
+    			}
+
+    			if (detaching) detach_dev(t10$);
+    			if (detaching) detach_dev(button$);
     			mounted = false;
-    			dispose();
+    			run_all(dispose);
     		}
     	};
 
@@ -11173,17 +11246,113 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(816:12) {#if selectedShape.role === \\\"input\\\"}",
+    		source: "(831:12) {#if selectedShape.role === \\\"input\\\"}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (860:12) {#if label.name}
+    // (837:16) {#each selectedShape.envVars as env, idx (idx)}
+    function create_each_block$_1(key$_1, ctx) {
+    	let div$;
+    	let input0$;
+    	let t0$;
+    	let input1$;
+    	let t1$;
+    	let button$;
+    	let mounted;
+    	let dispose;
+
+    	function input0$_input_handler$() {
+    		/*input0$_input_handler$*/ ctx[14].call(input0$, /*each_value$_1*/ ctx[42], /*idx*/ ctx[43]);
+    	}
+
+    	function input1$_input_handler$() {
+    		/*input1$_input_handler$*/ ctx[16].call(input1$, /*each_value$_1*/ ctx[42], /*idx*/ ctx[43]);
+    	}
+
+    	function click_handler$() {
+    		return /*click_handler$*/ ctx[18](/*idx*/ ctx[43]);
+    	}
+
+    	const block$ = {
+    		key: key$_1,
+    		first: null,
+    		c: function create() {
+    			div$ = element("div");
+    			input0$ = element("input");
+    			t0$ = space();
+    			input1$ = element("input");
+    			t1$ = space();
+    			button$ = element("button");
+    			button$.textContent = "Remove";
+    			attr_dev(input0$, "placeholder", "Key");
+    			attr_dev(input0$, "class", "svelte-1mvy60t");
+    			add_location(input0$, file$, 838, 24, 33459);
+    			attr_dev(input1$, "placeholder", "Value");
+    			attr_dev(input1$, "class", "svelte-1mvy60t");
+    			add_location(input1$, file$, 843, 24, 33678);
+    			add_location(button$, file$, 848, 24, 33901);
+    			attr_dev(div$, "class", "env-row");
+    			add_location(div$, file$, 837, 20, 33413);
+    			this.first = div$;
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div$, anchor);
+    			append_dev(div$, input0$);
+    			set_input_value(input0$, /*env*/ ctx[41].key);
+    			append_dev(div$, t0$);
+    			append_dev(div$, input1$);
+    			set_input_value(input1$, /*env*/ ctx[41].value);
+    			append_dev(div$, t1$);
+    			append_dev(div$, button$);
+
+    			if (!mounted) {
+    				dispose = [
+    					listen_dev(input0$, "input", input0$_input_handler$),
+    					listen_dev(input0$, "input", /*input_handler$*/ ctx[15], false, false, false, false),
+    					listen_dev(input1$, "input", input1$_input_handler$),
+    					listen_dev(input1$, "input", /*input_handler$_1*/ ctx[17], false, false, false, false),
+    					listen_dev(button$, "click", click_handler$, false, false, false, false)
+    				];
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(new_ctx, dirty) {
+    			ctx = new_ctx;
+
+    			if (dirty[0] & /*selectedShape*/ 16 && input0$.value !== /*env*/ ctx[41].key) {
+    				set_input_value(input0$, /*env*/ ctx[41].key);
+    			}
+
+    			if (dirty[0] & /*selectedShape*/ 16 && input1$.value !== /*env*/ ctx[41].value) {
+    				set_input_value(input1$, /*env*/ ctx[41].value);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div$);
+    			mounted = false;
+    			run_all(dispose);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block: block$,
+    		id: create_each_block$_1.name,
+    		type: "each",
+    		source: "(837:16) {#each selectedShape.envVars as env, idx (idx)}",
+    		ctx
+    	});
+
+    	return block$;
+    }
+
+    // (906:12) {#if label.name}
     function create_if_block$(ctx) {
     	let div$;
-    	let t0$_value$ = /*label*/ ctx[32].name + "";
+    	let t0$_value$ = /*label*/ ctx[38].name + "";
     	let t0$;
     	let t1$;
 
@@ -11193,9 +11362,9 @@ var app = (function () {
     			t0$ = text(t0$_value$);
     			t1$ = space();
     			attr_dev(div$, "class", "node-label svelte-1mvy60t");
-    			set_style(div$, "left", /*label*/ ctx[32].x + "px");
-    			set_style(div$, "top", /*label*/ ctx[32].y + "px");
-    			add_location(div$, file$, 860, 16, 34167);
+    			set_style(div$, "left", /*label*/ ctx[38].x + "px");
+    			set_style(div$, "top", /*label*/ ctx[38].y + "px");
+    			add_location(div$, file$, 906, 16, 36183);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
@@ -11203,14 +11372,14 @@ var app = (function () {
     			append_dev(div$, t1$);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty[0] & /*labels*/ 2 && t0$_value$ !== (t0$_value$ = /*label*/ ctx[32].name + "")) set_data_dev(t0$, t0$_value$);
+    			if (dirty[0] & /*labels*/ 4 && t0$_value$ !== (t0$_value$ = /*label*/ ctx[38].name + "")) set_data_dev(t0$, t0$_value$);
 
-    			if (dirty[0] & /*labels*/ 2) {
-    				set_style(div$, "left", /*label*/ ctx[32].x + "px");
+    			if (dirty[0] & /*labels*/ 4) {
+    				set_style(div$, "left", /*label*/ ctx[38].x + "px");
     			}
 
-    			if (dirty[0] & /*labels*/ 2) {
-    				set_style(div$, "top", /*label*/ ctx[32].y + "px");
+    			if (dirty[0] & /*labels*/ 4) {
+    				set_style(div$, "top", /*label*/ ctx[38].y + "px");
     			}
     		},
     		d: function destroy(detaching) {
@@ -11222,18 +11391,18 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(860:12) {#if label.name}",
+    		source: "(906:12) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (859:8) {#each labels as label, i (i)}
+    // (905:8) {#each labels as label, i (i)}
     function create_each_block$(key$_1, ctx) {
     	let first$;
     	let if_block$_anchor$;
-    	let if_block$ = /*label*/ ctx[32].name && create_if_block$(ctx);
+    	let if_block$ = /*label*/ ctx[38].name && create_if_block$(ctx);
 
     	const block$ = {
     		key: key$_1,
@@ -11252,7 +11421,7 @@ var app = (function () {
     		p: function update(new_ctx, dirty) {
     			ctx = new_ctx;
 
-    			if (/*label*/ ctx[32].name) {
+    			if (/*label*/ ctx[38].name) {
     				if (if_block$) {
     					if_block$.p(ctx, dirty);
     				} else {
@@ -11276,7 +11445,7 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$.name,
     		type: "each",
-    		source: "(859:8) {#each labels as label, i (i)}",
+    		source: "(905:8) {#each labels as label, i (i)}",
     		ctx
     	});
 
@@ -11306,10 +11475,10 @@ var app = (function () {
     	let button2$_disabled_value$;
     	let mounted;
     	let dispose;
-    	let if_block$ = /*selectedShape*/ ctx[3] && create_if_block$_1(ctx);
-    	let each_value$ = /*labels*/ ctx[1];
+    	let if_block$ = /*selectedShape*/ ctx[4] && create_if_block$_1(ctx);
+    	let each_value$ = /*labels*/ ctx[2];
     	validate_each_argument(each_value$);
-    	const get_key$ = ctx => /*i*/ ctx[34];
+    	const get_key$ = ctx => /*i*/ ctx[40];
     	validate_each_keys(ctx, each_value$, get_each_context$, get_key$);
 
     	for (let i = 0; i < each_value$.length; i += 1) {
@@ -11345,26 +11514,26 @@ var app = (function () {
     			button2$ = element("button");
     			t8$ = text("Stop");
     			attr_dev(div0$, "class", "info-panel svelte-1mvy60t");
-    			set_style(div0$, "width", /*panelWidth*/ ctx[2] + "px");
-    			add_location(div0$, file$, 813, 4, 32261);
+    			set_style(div0$, "width", /*panelWidth*/ ctx[3] + "px");
+    			add_location(div0$, file$, 828, 4, 32931);
     			attr_dev(div1$, "class", "resizer svelte-1mvy60t");
-    			add_location(div1$, file$, 854, 4, 33932);
+    			add_location(div1$, file$, 900, 4, 35948);
     			attr_dev(canvas$, "class", "svelte-1mvy60t");
-    			add_location(canvas$, file$, 857, 8, 34046);
+    			add_location(canvas$, file$, 903, 8, 36062);
     			attr_dev(div2$, "class", "canvas-container svelte-1mvy60t");
-    			add_location(div2$, file$, 856, 4, 34007);
+    			add_location(div2$, file$, 902, 4, 36023);
     			attr_dev(button0$, "class", "svelte-1mvy60t");
-    			add_location(button0$, file$, 871, 8, 34431);
-    			button1$.disabled = /*isRunning*/ ctx[4];
+    			add_location(button0$, file$, 917, 8, 36447);
+    			button1$.disabled = /*isRunning*/ ctx[5];
     			attr_dev(button1$, "class", "svelte-1mvy60t");
-    			add_location(button1$, file$, 872, 8, 34486);
-    			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[4];
+    			add_location(button1$, file$, 918, 8, 36502);
+    			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[5];
     			attr_dev(button2$, "class", "svelte-1mvy60t");
-    			add_location(button2$, file$, 873, 8, 34561);
+    			add_location(button2$, file$, 919, 8, 36577);
     			attr_dev(div3$, "class", "controls svelte-1mvy60t");
-    			add_location(div3$, file$, 870, 4, 34400);
+    			add_location(div3$, file$, 916, 4, 36416);
     			attr_dev(div4$, "class", "app-wrap svelte-1mvy60t");
-    			add_location(div4$, file$, 812, 0, 32234);
+    			add_location(div4$, file$, 827, 0, 32904);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -11378,7 +11547,7 @@ var app = (function () {
     			append_dev(div4$, t1$);
     			append_dev(div4$, div2$);
     			append_dev(div2$, canvas$);
-    			/*canvas$_binding$*/ ctx[18](canvas$);
+    			/*canvas$_binding$*/ ctx[24](canvas$);
     			append_dev(div2$, t2$);
 
     			for (let i = 0; i < each_blocks$.length; i += 1) {
@@ -11399,17 +11568,17 @@ var app = (function () {
 
     			if (!mounted) {
     				dispose = [
-    					listen_dev(div1$, "mousedown", /*handlePanelResizeMouseDown*/ ctx[5], false, false, false, false),
-    					listen_dev(button0$, "click", /*addCircle*/ ctx[6], false, false, false, false),
-    					listen_dev(button1$, "click", /*playPipeline*/ ctx[7], false, false, false, false),
-    					listen_dev(button2$, "click", /*stopPipeline*/ ctx[8], false, false, false, false)
+    					listen_dev(div1$, "mousedown", /*handlePanelResizeMouseDown*/ ctx[6], false, false, false, false),
+    					listen_dev(button0$, "click", /*addCircle*/ ctx[7], false, false, false, false),
+    					listen_dev(button1$, "click", /*playPipeline*/ ctx[8], false, false, false, false),
+    					listen_dev(button2$, "click", /*stopPipeline*/ ctx[9], false, false, false, false)
     				];
 
     				mounted = true;
     			}
     		},
     		p: function update(ctx, dirty) {
-    			if (/*selectedShape*/ ctx[3]) {
+    			if (/*selectedShape*/ ctx[4]) {
     				if (if_block$) {
     					if_block$.p(ctx, dirty);
     				} else {
@@ -11422,22 +11591,22 @@ var app = (function () {
     				if_block$ = null;
     			}
 
-    			if (dirty[0] & /*panelWidth*/ 4) {
-    				set_style(div0$, "width", /*panelWidth*/ ctx[2] + "px");
+    			if (dirty[0] & /*panelWidth*/ 8) {
+    				set_style(div0$, "width", /*panelWidth*/ ctx[3] + "px");
     			}
 
-    			if (dirty[0] & /*labels*/ 2) {
-    				each_value$ = /*labels*/ ctx[1];
+    			if (dirty[0] & /*labels*/ 4) {
+    				each_value$ = /*labels*/ ctx[2];
     				validate_each_argument(each_value$);
     				validate_each_keys(ctx, each_value$, get_each_context$, get_key$);
     				each_blocks$ = update_keyed_each(each_blocks$, dirty, get_key$, 1, ctx, each_value$, each$_lookup$, div2$, destroy_block, create_each_block$, null, get_each_context$);
     			}
 
-    			if (dirty[0] & /*isRunning*/ 16) {
-    				prop_dev(button1$, "disabled", /*isRunning*/ ctx[4]);
+    			if (dirty[0] & /*isRunning*/ 32) {
+    				prop_dev(button1$, "disabled", /*isRunning*/ ctx[5]);
     			}
 
-    			if (dirty[0] & /*isRunning*/ 16 && button2$_disabled_value$ !== (button2$_disabled_value$ = !/*isRunning*/ ctx[4])) {
+    			if (dirty[0] & /*isRunning*/ 32 && button2$_disabled_value$ !== (button2$_disabled_value$ = !/*isRunning*/ ctx[5])) {
     				prop_dev(button2$, "disabled", button2$_disabled_value$);
     			}
     		},
@@ -11446,7 +11615,7 @@ var app = (function () {
     		d: function destroy(detaching) {
     			if (detaching) detach_dev(div4$);
     			if (if_block$) if_block$.d();
-    			/*canvas$_binding$*/ ctx[18](null);
+    			/*canvas$_binding$*/ ctx[24](null);
 
     			for (let i = 0; i < each_blocks$.length; i += 1) {
     				each_blocks$[i].d();
@@ -11496,6 +11665,7 @@ var app = (function () {
     			color: ioColor,
     			selected: false,
     			inputText: "",
+    			envVars: [],
     			name: "Input",
     			highlight: false
     		},
@@ -11521,6 +11691,14 @@ var app = (function () {
     			try {
     				const parsed = JSON.parse(saved);
     				const circles = parsed.filter(s => s.type === "circle");
+
+    				// Ensure input node has envVars property
+    				circles.forEach(s => {
+    					if (s.role === "input" && s.envVars == null) {
+    						s.envVars = [];
+    					}
+    				});
+
     				const edgesRaw = parsed.filter(s => s.type === "edge");
     				scene = [...circles];
 
@@ -11579,7 +11757,7 @@ var app = (function () {
     		const delta = panelResizeStartX - e.clientX;
     		const minWidth = 200;
     		const maxWidth = window.innerWidth - 100;
-    		$$invalidate(2, panelWidth = Math.max(minWidth, Math.min(maxWidth, panelResizeStartWidth + delta)));
+    		$$invalidate(3, panelWidth = Math.max(minWidth, Math.min(maxWidth, panelResizeStartWidth + delta)));
     	}
 
     	function handlePanelResizeMouseUp() {
@@ -11655,7 +11833,7 @@ var app = (function () {
     		});
 
     		// Trigger reactivity for scene change
-    		$$invalidate(10, scene = [...scene]);
+    		$$invalidate(1, scene = [...scene]);
     	}
 
     	onMount(() => {
@@ -11804,7 +11982,7 @@ var app = (function () {
     			scene.forEach(s => s.highlight = false);
 
     			// Trigger reactive update to clear highlight in UI
-    			$$invalidate(10, scene = [...scene]);
+    			$$invalidate(1, scene = [...scene]);
 
     			const rect = canvas.getBoundingClientRect();
 
@@ -11870,7 +12048,7 @@ var app = (function () {
     					dragging = null;
 
     					// Trigger reactivity for scene changes
-    					$$invalidate(10, scene = [...scene]);
+    					$$invalidate(1, scene = [...scene]);
 
     					return;
     				}
@@ -11888,7 +12066,7 @@ var app = (function () {
     				dragging.selected = true;
 
     				// Trigger reactivity for selection change
-    				$$invalidate(10, scene = [...scene]);
+    				$$invalidate(1, scene = [...scene]);
     			} else {
     				// Try selecting an edge if clicked near it
     				const EDGE_TOLERANCE = 0.03;
@@ -11927,7 +12105,7 @@ var app = (function () {
     					isPanning = false;
 
     					// Trigger reactivity for edge selection
-    					$$invalidate(10, scene = [...scene]);
+    					$$invalidate(1, scene = [...scene]);
 
     					return;
     				}
@@ -11938,7 +12116,7 @@ var app = (function () {
     				});
 
     				// Trigger reactivity for deselection
-    				$$invalidate(10, scene = [...scene]);
+    				$$invalidate(1, scene = [...scene]);
 
     				isPanning = true;
     				panStart = [e.clientX, e.clientY];
@@ -12249,9 +12427,19 @@ var app = (function () {
     			return;
     		}
 
-    		$$invalidate(4, isRunning = true);
+    		$$invalidate(5, isRunning = true);
     		abort = false;
     		let data = scene.find(s => s.role === "input").inputText;
+
+    		// Prepare environment variable prefix from input node
+    		const inputNode = scene.find(s => s.role === "input");
+
+    		const envVars = inputNode.envVars || [];
+    		let envPrefix = "";
+
+    		if (envVars.length > 0) {
+    			envPrefix = envVars.map(e => `${e.key}='${e.value}'`).join("; ") + "; ";
+    		}
 
     		for (let i = 0; i < nodes.length && !abort; i++) {
     			// Clear previous highlights and selections so info follows the play
@@ -12264,7 +12452,7 @@ var app = (function () {
     			node.highlight = true;
 
     			// Trigger reactive update so info panel shows current node
-    			$$invalidate(10, scene = [...scene]);
+    			$$invalidate(1, scene = [...scene]);
 
     			if (i > 0) {
     				const prev = nodes[i - 1];
@@ -12274,8 +12462,9 @@ var app = (function () {
 
     			if (node.role === "default") {
     				// Replace template variable {input} with output from previous node
-    				const cmd = node.command.replace(/\{input\}/g, data);
+    				const rawCmd = node.command.replace(/\{input\}/g, data);
 
+    				const cmd = envPrefix ? `${envPrefix}${rawCmd}` : rawCmd;
     				console.log(`Running command on node ${node.name}: ${cmd} with stdin: ${data}`);
     				data = await runCommand(data, cmd);
     				console.log("Command output:", data);
@@ -12283,24 +12472,24 @@ var app = (function () {
     				// Store and show intermediate output
     				node.outputText = data;
 
-    				$$invalidate(10, scene = [...scene]);
+    				$$invalidate(1, scene = [...scene]);
     			} else if (node.role === "output") {
     				node.outputText = data;
 
     				// Ensure final output stays shown
-    				$$invalidate(10, scene = [...scene]);
+    				$$invalidate(1, scene = [...scene]);
     			}
 
     			// Delay after output update so user can perceive changes
     			await new Promise(r => setTimeout(r, 500));
     		}
 
-    		$$invalidate(4, isRunning = false);
+    		$$invalidate(5, isRunning = false);
     	}
 
     	function stopPipeline() {
     		abort = true;
-    		$$invalidate(4, isRunning = false);
+    		$$invalidate(5, isRunning = false);
     	}
 
     	// Copy current node output to clipboard
@@ -12324,33 +12513,58 @@ var app = (function () {
 
     	function textarea$_input_handler$() {
     		selectedShape.inputText = this.value;
-    		(((($$invalidate(3, selectedShape), $$invalidate(0, canvas)), $$invalidate(10, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    		(((($$invalidate(4, selectedShape), $$invalidate(0, canvas)), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
     	}
+
+    	function input0$_input_handler$(each_value$_1, idx) {
+    		each_value$_1[idx].key = this.value;
+    		(((($$invalidate(4, selectedShape), $$invalidate(0, canvas)), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    	}
+
+    	const input_handler$ = () => $$invalidate(1, scene = [...scene]);
+
+    	function input1$_input_handler$(each_value$_1, idx) {
+    		each_value$_1[idx].value = this.value;
+    		(((($$invalidate(4, selectedShape), $$invalidate(0, canvas)), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    	}
+
+    	const input_handler$_1 = () => $$invalidate(1, scene = [...scene]);
+
+    	const click_handler$ = idx => {
+    		selectedShape.envVars.splice(idx, 1);
+    		$$invalidate(1, scene = [...scene]);
+    	};
+
+    	const click_handler$_1 = () => {
+    		$$invalidate(4, selectedShape.envVars = selectedShape.envVars || [], selectedShape);
+    		selectedShape.envVars.push({ key: "", value: "" });
+    		$$invalidate(1, scene = [...scene]);
+    	};
 
     	function textarea$_input_handler$_1() {
     		selectedShape.outputText = this.value;
-    		(((($$invalidate(3, selectedShape), $$invalidate(0, canvas)), $$invalidate(10, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    		(((($$invalidate(4, selectedShape), $$invalidate(0, canvas)), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
     	}
 
     	function input$_input_handler$() {
     		selectedShape.name = this.value;
-    		(((($$invalidate(3, selectedShape), $$invalidate(0, canvas)), $$invalidate(10, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    		(((($$invalidate(4, selectedShape), $$invalidate(0, canvas)), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
     	}
 
     	function textarea0$_input_handler$() {
     		selectedShape.command = this.value;
-    		(((($$invalidate(3, selectedShape), $$invalidate(0, canvas)), $$invalidate(10, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    		(((($$invalidate(4, selectedShape), $$invalidate(0, canvas)), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
     	}
 
     	function textarea1$_input_handler$() {
     		selectedShape.outputText = this.value;
-    		(((($$invalidate(3, selectedShape), $$invalidate(0, canvas)), $$invalidate(10, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    		(((($$invalidate(4, selectedShape), $$invalidate(0, canvas)), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
     	}
 
     	function canvas$_binding$($$value) {
     		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
     			canvas = $$value;
-    			((($$invalidate(0, canvas), $$invalidate(10, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
+    			((($$invalidate(0, canvas), $$invalidate(1, scene)), $$invalidate(11, viewScale)), $$invalidate(12, viewOffset));
     		});
     	}
 
@@ -12388,16 +12602,16 @@ var app = (function () {
 
     	$$self.$inject_state = $$props => {
     		if ('canvas' in $$props) $$invalidate(0, canvas = $$props.canvas);
-    		if ('scene' in $$props) $$invalidate(10, scene = $$props.scene);
+    		if ('scene' in $$props) $$invalidate(1, scene = $$props.scene);
     		if ('viewScale' in $$props) $$invalidate(11, viewScale = $$props.viewScale);
     		if ('viewOffset' in $$props) $$invalidate(12, viewOffset = $$props.viewOffset);
-    		if ('labels' in $$props) $$invalidate(1, labels = $$props.labels);
-    		if ('panelWidth' in $$props) $$invalidate(2, panelWidth = $$props.panelWidth);
+    		if ('labels' in $$props) $$invalidate(2, labels = $$props.labels);
+    		if ('panelWidth' in $$props) $$invalidate(3, panelWidth = $$props.panelWidth);
     		if ('isResizing' in $$props) isResizing = $$props.isResizing;
     		if ('panelResizeStartX' in $$props) panelResizeStartX = $$props.panelResizeStartX;
     		if ('panelResizeStartWidth' in $$props) panelResizeStartWidth = $$props.panelResizeStartWidth;
-    		if ('selectedShape' in $$props) $$invalidate(3, selectedShape = $$props.selectedShape);
-    		if ('isRunning' in $$props) $$invalidate(4, isRunning = $$props.isRunning);
+    		if ('selectedShape' in $$props) $$invalidate(4, selectedShape = $$props.selectedShape);
+    		if ('isRunning' in $$props) $$invalidate(5, isRunning = $$props.isRunning);
     		if ('abort' in $$props) abort = $$props.abort;
     	};
 
@@ -12406,7 +12620,7 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty[0] & /*canvas, scene, viewScale, viewOffset*/ 7169) {
+    		if ($$self.$$.dirty[0] & /*canvas, scene, viewScale, viewOffset*/ 6147) {
     			// Update screen-space labels below each node whenever relevant state changes
     			if (canvas) {
     				const w = canvas.clientWidth;
@@ -12417,7 +12631,7 @@ var app = (function () {
 
     				$$invalidate(0, canvas.height = h * window.devicePixelRatio, canvas);
 
-    				$$invalidate(1, labels = scene.filter(s => s.type === "circle").map(s => {
+    				$$invalidate(2, labels = scene.filter(s => s.type === "circle").map(s => {
     					const xN = s.center[0] * viewScale + viewOffset[0];
     					const yN = s.center[1] * viewScale + viewOffset[1];
     					const xPx = (xN + 1) / 2 * w;
@@ -12431,11 +12645,11 @@ var app = (function () {
     				}));
 
     				// Active shape: prefer highlighted (during play), otherwise selected by user; fallback to output node
-    				$$invalidate(3, selectedShape = scene.find(s => s.type === "circle" && (s.highlight || s.selected)) || scene.find(s => s.type === "circle" && s.role === "output"));
+    				$$invalidate(4, selectedShape = scene.find(s => s.type === "circle" && (s.highlight || s.selected)) || scene.find(s => s.type === "circle" && s.role === "output"));
     			}
     		}
 
-    		if ($$self.$$.dirty[0] & /*scene*/ 1024) {
+    		if ($$self.$$.dirty[0] & /*scene*/ 2) {
     			if (typeof window !== "undefined") {
     				window.localStorage.setItem("scene", JSON.stringify(scene));
     			}
@@ -12444,6 +12658,7 @@ var app = (function () {
 
     	return [
     		canvas,
+    		scene,
     		labels,
     		panelWidth,
     		selectedShape,
@@ -12453,10 +12668,15 @@ var app = (function () {
     		playPipeline,
     		stopPipeline,
     		copyOutput,
-    		scene,
     		viewScale,
     		viewOffset,
     		textarea$_input_handler$,
+    		input0$_input_handler$,
+    		input_handler$,
+    		input1$_input_handler$,
+    		input_handler$_1,
+    		click_handler$,
+    		click_handler$_1,
     		textarea$_input_handler$_1,
     		input$_input_handler$,
     		textarea0$_input_handler$,

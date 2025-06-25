@@ -1,0 +1,8 @@
+stdin_text=$(cat) && curl -s https://api.openai.com/v1/responses -H "Content-Type: application/json" -H "Authorization: Bearer $OPENAI_API_KEY" -d '{"model":"gpt-4o","input":[{"role":"system","content":[{"type":"input_text","text":"Provide 10 ideas for potential market segments for '"${stdin_text}"'."}]}],"text":{"format":{"type":"text"}},"reasoning":{},"tools":[],"temperature":1,"max_output_tokens":2048,"top_p":1,"store":true}'
+
+jq -r '.output[0].content[0].text'
+
+curl https://api.openai.com/v1/responses \   -H "Content-Type: application/json" \   -H "Authorization: Bearer $OPENAI_API_KEY" \   -d '{   "model": "gpt-4o",   "input": [     {       "role": "system",       "content": [         {           "type": "input_text",           "text": "Select the top 3 market segments that are the best fit for:\n\nMarket segments for a potential startup that uses on-device LLMs to record, transcribe, and summarize a one hour long two people conversation.\n\nfrom ${stdin_text}\n\nAnd elaborate on why you chose them, also suggest strategies to reach them, and help the startup validate demand."         }       ]     }   ],   "text": {     "format": {       "type": "text"     }   },   "reasoning": {},   "tools": [],   "temperature": 1,   "max_output_tokens": 2048,   "top_p": 1,   "store": true }'
+
+jq -r '.output[0].content[0].text'
+

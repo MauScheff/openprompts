@@ -529,18 +529,16 @@
                 if (circle.role === "input" || circle.role === "output") {
                     return;
                 }
-                // Remove the circle
+                // Remove the circle and any connected edges
                 scene.splice(circleIdx, 1);
-                // Remove any edges connected to this circle
                 for (let i = scene.length - 1; i >= 0; i--) {
                     const s = scene[i];
-                    if (
-                        s.type === "edge" &&
-                        (s.from === circle || s.to === circle)
-                    ) {
+                    if (s.type === "edge" && (s.from === circle || s.to === circle)) {
                         scene.splice(i, 1);
                     }
                 }
+                // Trigger reactivity
+                scene = [...scene];
                 return;
             }
             // Delete selected edge if no circle deletion
@@ -549,6 +547,8 @@
             );
             if (edgeIdx !== -1) {
                 scene.splice(edgeIdx, 1);
+                // Trigger reactivity
+                scene = [...scene];
             }
         });
         regl.frame(() => {
@@ -708,6 +708,15 @@
         }
         return cur === outputNode ? nodes : [];
     }
+    
+    // Reactive flag: whether there is a valid path from input to output
+    let hasPath = false;
+    $: hasPath = (() => {
+        // Reference scene to ensure reactivity
+        scene;
+        return getPipelineNodes().length > 0;
+    })();
+
 
     async function runCommand(stdin, cmd) {
         let result = "";
@@ -937,7 +946,7 @@
 
     <div class="controls">
         <button on:click={addCircle}>Add Step</button>
-        <button on:click={playPipeline} disabled={isRunning}>
+        <button on:click={playPipeline} disabled={isRunning || !hasPath}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
             </svg>

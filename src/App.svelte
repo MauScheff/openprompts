@@ -766,23 +766,39 @@
 
     async function playPipeline() {
         if (isRunning) return;
-        const nodes = getPipelineNodes();
-        if (nodes.length === 0) {
+        // Determine pipeline nodes, optionally starting from selected node
+        const fullNodes = getPipelineNodes();
+        if (fullNodes.length === 0) {
             alert("No path from input to output");
             return;
         }
+        // Determine start index based on selected node
+        let startIndex = 0;
+        const selectedNode = scene.find((s) => s.type === "circle" && s.selected);
+        if (selectedNode) {
+            const idx = fullNodes.indexOf(selectedNode);
+            if (idx >= 0) {
+                startIndex = idx;
+            }
+        }
+        // Pipeline nodes to execute
+        const nodes = fullNodes.slice(startIndex);
         isRunning = true;
         abort = false;
-        let data = scene.find((s) => s.role === "input").inputText;
+        // Initialize data based on startIndex and previous node's output or input
+        let data;
+        if (startIndex > 0) {
+            const prev = fullNodes[startIndex - 1];
+            data = prev.role === "input" ? prev.inputText : prev.outputText;
+        } else {
+            data = scene.find((s) => s.role === "input").inputText;
+        }
         // Prepare environment variable prefix from input node
         const inputNode = scene.find((s) => s.role === "input");
-        const envVars = (inputNode.envVars || []).filter(
-            (e) => e.key && e.value,
-        );
+        const envVars = (inputNode.envVars || []).filter((e) => e.key && e.value);
         let envPrefix = "";
         if (envVars.length > 0) {
-            envPrefix =
-                envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; ";
+            envPrefix = envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; ";
         }
         for (let i = 0; i < nodes.length && !abort; i++) {
             // Clear previous highlights and selections so info follows the play
@@ -791,29 +807,28 @@
                 s.selected = false;
             });
             const node = nodes[i];
-            // Highlight the next node (if any), not the current node
-            if (i + 1 < nodes.length) {
-                nodes[i + 1].highlight = true;              
-            }
-            // Always highlight the edge that is before the highlighted node
-            scene = [...scene];
-            // if (i > 0) {
-            //     const prev = nodes[i - 1];
-            //     const edge = scene.find(
-            //         (e) =>
-            //             e.type === "edge" && e.from === prev && e.to === node,
-            //     );
-            //     if (edge) edge.highlight = true;
-            // }
-            // Also highlight the edge leading to the currently highlighted node (if any)
-            if (i + 1 < nodes.length) {
-                const next = nodes[i + 1];
-                const edgeToNext = scene.find(
-                    (e) =>
-                        e.type === "edge" && e.from === node && e.to === next,
+            // Highlight current or next node and connecting edge
+            if (i === 0 && startIndex > 0) {
+                // Highlight starting node when resuming
+                node.highlight = true;
+                const prev = fullNodes[startIndex - 1];
+                const edgeToStart = scene.find(
+                    (e) => e.type === "edge" && e.from === prev && e.to === node
                 );
-                if (edgeToNext) edgeToNext.highlight = true;
+                if (edgeToStart) edgeToStart.highlight = true;
+            } else {
+                // Highlight next node (if any) and its edge
+                if (i + 1 < nodes.length) {
+                    const next = nodes[i + 1];
+                    next.highlight = true;
+                    const edgeToNext = scene.find(
+                        (e) => e.type === "edge" && e.from === node && e.to === next
+                    );
+                    if (edgeToNext) edgeToNext.highlight = true;
+                }
             }
+            // Trigger update for UI to reflect highlights
+            scene = [...scene];
             if (node.role === "default") {
                 // Trigger update for UI to reflect loading
                 scene = [...scene];
@@ -834,7 +849,7 @@
                 scene = [...scene];
             }
             // Delay after output update so user can perceive changes
-            await new Promise((r) => setTimeout(r, 500));
+            await new Promise((r) => setTimeout(r, 650));
         }
         isRunning = false;
     }

@@ -10898,7 +10898,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (898:8) {#if selectedShape}
+    // (913:8) {#if selectedShape}
     function create_if_block$_1(ctx) {
     	let if_block$_anchor$;
 
@@ -10943,14 +10943,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(898:8) {#if selectedShape}",
+    		source: "(913:8) {#if selectedShape}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (952:12) {:else}
+    // (967:12) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -10997,26 +10997,26 @@ var app = (function () {
     			t12$ = space();
     			textarea1$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1utyf3b");
-    			add_location(h3$, file$, 952, 16, 37531);
+    			add_location(h3$, file$, 967, 16, 38291);
     			attr_dev(input$, "class", "svelte-1utyf3b");
-    			add_location(input$, file$, 953, 29, 37576);
+    			add_location(input$, file$, 968, 29, 38336);
     			attr_dev(label0$, "class", "svelte-1utyf3b");
-    			add_location(label0$, file$, 953, 16, 37563);
+    			add_location(label0$, file$, 968, 16, 38323);
     			attr_dev(label1$, "class", "svelte-1utyf3b");
-    			add_location(label1$, file$, 954, 16, 37642);
+    			add_location(label1$, file$, 969, 16, 38402);
     			attr_dev(textarea0$, "rows", "10");
     			attr_dev(textarea0$, "class", "command-input svelte-1utyf3b");
-    			add_location(textarea0$, file$, 955, 16, 37682);
+    			add_location(textarea0$, file$, 970, 16, 38442);
     			attr_dev(label2$, "class", "hint svelte-1utyf3b");
-    			add_location(label2$, file$, 960, 16, 37864);
+    			add_location(label2$, file$, 975, 16, 38624);
     			attr_dev(label3$, "class", "svelte-1utyf3b");
-    			add_location(label3$, file$, 961, 16, 37944);
+    			add_location(label3$, file$, 976, 16, 38704);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 962, 16, 37983);
+    			add_location(button$, file$, 977, 16, 38743);
     			attr_dev(textarea1$, "rows", "20");
     			textarea1$.readOnly = true;
     			attr_dev(textarea1$, "class", "svelte-1utyf3b");
-    			add_location(textarea1$, file$, 963, 16, 38063);
+    			add_location(textarea1$, file$, 978, 16, 38823);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11089,14 +11089,14 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(952:12) {:else}",
+    		source: "(967:12) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (942:54) 
+    // (957:54) 
     function create_if_block$_3(ctx) {
     	let h3$;
     	let t1$;
@@ -11130,17 +11130,17 @@ var app = (function () {
     			t8$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1utyf3b");
-    			add_location(h3$, file$, 942, 16, 37130);
+    			add_location(h3$, file$, 957, 16, 37890);
     			attr_dev(label0$, "class", "svelte-1utyf3b");
-    			add_location(label0$, file$, 943, 16, 37162);
+    			add_location(label0$, file$, 958, 16, 37922);
     			attr_dev(label1$, "class", "svelte-1utyf3b");
-    			add_location(label1$, file$, 944, 16, 37220);
+    			add_location(label1$, file$, 959, 16, 37980);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 945, 16, 37259);
+    			add_location(button$, file$, 960, 16, 38019);
     			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-1utyf3b");
-    			add_location(textarea$, file$, 946, 16, 37339);
+    			add_location(textarea$, file$, 961, 16, 38099);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11191,14 +11191,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_3.name,
     		type: "if",
-    		source: "(942:54) ",
+    		source: "(957:54) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (899:12) {#if selectedShape.role === "input"}
+    // (914:12) {#if selectedShape.role === "input"}
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
@@ -11256,18 +11256,18 @@ var app = (function () {
     			button$ = element("button");
     			button$.textContent = "Add Variable";
     			attr_dev(h3$, "class", "svelte-1utyf3b");
-    			add_location(h3$, file$, 899, 16, 35234);
+    			add_location(h3$, file$, 914, 16, 35994);
     			attr_dev(label0$, "class", "svelte-1utyf3b");
-    			add_location(label0$, file$, 900, 16, 35265);
+    			add_location(label0$, file$, 915, 16, 36025);
     			attr_dev(label1$, "class", "svelte-1utyf3b");
-    			add_location(label1$, file$, 901, 16, 35323);
+    			add_location(label1$, file$, 916, 16, 36083);
     			attr_dev(textarea$, "rows", "5");
     			attr_dev(textarea$, "class", "svelte-1utyf3b");
-    			add_location(textarea$, file$, 902, 16, 35361);
+    			add_location(textarea$, file$, 917, 16, 36121);
     			attr_dev(label2$, "class", "svelte-1utyf3b");
-    			add_location(label2$, file$, 904, 16, 35462);
+    			add_location(label2$, file$, 919, 16, 36222);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 931, 16, 36676);
+    			add_location(button$, file$, 946, 16, 37436);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -11343,14 +11343,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(899:12) {#if selectedShape.role === \\\"input\\\"}",
+    		source: "(914:12) {#if selectedShape.role === \\\"input\\\"}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (906:16) {#each selectedShape.envVars as env, idx (idx)}
+    // (921:16) {#each selectedShape.envVars as env, idx (idx)}
     function create_each_block$_1(key$_1, ctx) {
     	let div1$;
     	let div0$;
@@ -11388,17 +11388,17 @@ var app = (function () {
     			textarea$ = element("textarea");
     			attr_dev(input$, "placeholder", "Key");
     			attr_dev(input$, "class", "svelte-1utyf3b");
-    			add_location(input$, file$, 908, 28, 35684);
+    			add_location(input$, file$, 923, 28, 36444);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 913, 28, 35923);
+    			add_location(button$, file$, 928, 28, 36683);
     			attr_dev(div0$, "class", "env-key-row svelte-1utyf3b");
-    			add_location(div0$, file$, 907, 24, 35630);
+    			add_location(div0$, file$, 922, 24, 36390);
     			attr_dev(textarea$, "placeholder", "Value");
     			attr_dev(textarea$, "rows", "3");
     			attr_dev(textarea$, "class", "svelte-1utyf3b");
-    			add_location(textarea$, file$, 923, 24, 36360);
+    			add_location(textarea$, file$, 938, 24, 37120);
     			attr_dev(div1$, "class", "env-row svelte-1utyf3b");
-    			add_location(div1$, file$, 906, 20, 35584);
+    			add_location(div1$, file$, 921, 20, 36344);
     			this.first = div1$;
     		},
     		m: function mount(target, anchor) {
@@ -11446,14 +11446,14 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$_1.name,
     		type: "each",
-    		source: "(906:16) {#each selectedShape.envVars as env, idx (idx)}",
+    		source: "(921:16) {#each selectedShape.envVars as env, idx (idx)}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (978:12) {#if label.name}
+    // (993:12) {#if label.name}
     function create_if_block$(ctx) {
     	let div$;
     	let t0$_value$ = /*label*/ ctx[41].name + "";
@@ -11468,7 +11468,7 @@ var app = (function () {
     			attr_dev(div$, "class", "node-label svelte-1utyf3b");
     			set_style(div$, "left", /*label*/ ctx[41].x + "px");
     			set_style(div$, "top", /*label*/ ctx[41].y + "px");
-    			add_location(div$, file$, 978, 16, 38552);
+    			add_location(div$, file$, 993, 16, 39312);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
@@ -11495,14 +11495,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(978:12) {#if label.name}",
+    		source: "(993:12) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (977:8) {#each labels as label, i (i)}
+    // (992:8) {#each labels as label, i (i)}
     function create_each_block$(key$_1, ctx) {
     	let first$;
     	let if_block$_anchor$;
@@ -11549,7 +11549,7 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$.name,
     		type: "each",
-    		source: "(977:8) {#each labels as label, i (i)}",
+    		source: "(992:8) {#each labels as label, i (i)}",
     		ctx
     	});
 
@@ -11647,55 +11647,55 @@ var app = (function () {
     			button4$.textContent = "Export";
     			attr_dev(div0$, "class", "info-panel svelte-1utyf3b");
     			set_style(div0$, "width", /*panelWidth*/ ctx[3] + "px");
-    			add_location(div0$, file$, 896, 4, 35085);
+    			add_location(div0$, file$, 911, 4, 35845);
     			attr_dev(div1$, "class", "resizer svelte-1utyf3b");
-    			add_location(div1$, file$, 972, 4, 38317);
+    			add_location(div1$, file$, 987, 4, 39077);
     			attr_dev(canvas$, "class", "svelte-1utyf3b");
-    			add_location(canvas$, file$, 975, 8, 38431);
+    			add_location(canvas$, file$, 990, 8, 39191);
     			attr_dev(div2$, "class", "canvas-container svelte-1utyf3b");
-    			add_location(div2$, file$, 974, 4, 38392);
+    			add_location(div2$, file$, 989, 4, 39152);
     			attr_dev(path0$, "d", "M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z");
-    			add_location(path0$, file$, 997, 16, 39055);
+    			add_location(path0$, file$, 1012, 16, 39815);
     			attr_dev(svg0$, "width", "16");
     			attr_dev(svg0$, "height", "16");
     			attr_dev(svg0$, "viewBox", "0 0 24 24");
     			attr_dev(svg0$, "fill", "currentColor");
     			attr_dev(svg0$, "aria-hidden", "true");
-    			add_location(svg0$, file$, 990, 12, 38858);
+    			add_location(svg0$, file$, 1005, 12, 39618);
     			attr_dev(button0$, "class", "svelte-1utyf3b");
-    			add_location(button0$, file$, 989, 8, 38816);
+    			add_location(button0$, file$, 1004, 8, 39576);
     			attr_dev(path1$, "d", "M8 5v14l11-7z");
-    			add_location(path1$, file$, 1009, 16, 39445);
+    			add_location(path1$, file$, 1024, 16, 40205);
     			attr_dev(svg1$, "width", "16");
     			attr_dev(svg1$, "height", "16");
     			attr_dev(svg1$, "viewBox", "0 0 24 24");
     			attr_dev(svg1$, "fill", "currentColor");
     			attr_dev(svg1$, "aria-hidden", "true");
-    			add_location(svg1$, file$, 1002, 12, 39248);
+    			add_location(svg1$, file$, 1017, 12, 40008);
     			button1$.disabled = button1$_disabled_value$ = /*isRunning*/ ctx[5] || !/*hasPath*/ ctx[6];
     			attr_dev(button1$, "class", "svelte-1utyf3b");
-    			add_location(button1$, file$, 1001, 8, 39170);
+    			add_location(button1$, file$, 1016, 8, 39930);
     			attr_dev(path2$, "d", "M6 6h12v12H6z");
-    			add_location(path2$, file$, 1021, 16, 39798);
+    			add_location(path2$, file$, 1036, 16, 40558);
     			attr_dev(svg2$, "width", "16");
     			attr_dev(svg2$, "height", "16");
     			attr_dev(svg2$, "viewBox", "0 0 24 24");
     			attr_dev(svg2$, "fill", "currentColor");
     			attr_dev(svg2$, "aria-hidden", "true");
-    			add_location(svg2$, file$, 1014, 12, 39601);
+    			add_location(svg2$, file$, 1029, 12, 40361);
     			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[5];
     			attr_dev(button2$, "class", "svelte-1utyf3b");
-    			add_location(button2$, file$, 1013, 8, 39534);
+    			add_location(button2$, file$, 1028, 8, 40294);
     			attr_dev(div3$, "class", "vertical-separator svelte-1utyf3b");
-    			add_location(div3$, file$, 1025, 8, 39887);
+    			add_location(div3$, file$, 1040, 8, 40647);
     			attr_dev(button3$, "class", "svelte-1utyf3b");
-    			add_location(button3$, file$, 1026, 8, 39934);
+    			add_location(button3$, file$, 1041, 8, 40694);
     			attr_dev(button4$, "class", "svelte-1utyf3b");
-    			add_location(button4$, file$, 1027, 8, 39989);
+    			add_location(button4$, file$, 1042, 8, 40749);
     			attr_dev(div4$, "class", "controls svelte-1utyf3b");
-    			add_location(div4$, file$, 988, 4, 38785);
+    			add_location(div4$, file$, 1003, 4, 39545);
     			attr_dev(div5$, "class", "app-wrap svelte-1utyf3b");
-    			add_location(div5$, file$, 895, 0, 35058);
+    			add_location(div5$, file$, 910, 0, 35818);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -12605,16 +12605,43 @@ var app = (function () {
     	// }
     	async function playPipeline() {
     		if (isRunning) return;
-    		const nodes = getPipelineNodes();
 
-    		if (nodes.length === 0) {
+    		// Determine pipeline nodes, optionally starting from selected node
+    		const fullNodes = getPipelineNodes();
+
+    		if (fullNodes.length === 0) {
     			alert("No path from input to output");
     			return;
     		}
 
+    		// Determine start index based on selected node
+    		let startIndex = 0;
+
+    		const selectedNode = scene.find(s => s.type === "circle" && s.selected);
+
+    		if (selectedNode) {
+    			const idx = fullNodes.indexOf(selectedNode);
+
+    			if (idx >= 0) {
+    				startIndex = idx;
+    			}
+    		}
+
+    		// Pipeline nodes to execute
+    		const nodes = fullNodes.slice(startIndex);
+
     		$$invalidate(5, isRunning = true);
     		abort = false;
-    		let data = scene.find(s => s.role === "input").inputText;
+
+    		// Initialize data based on startIndex and previous node's output or input
+    		let data;
+
+    		if (startIndex > 0) {
+    			const prev = fullNodes[startIndex - 1];
+    			data = prev.role === "input" ? prev.inputText : prev.outputText;
+    		} else {
+    			data = scene.find(s => s.role === "input").inputText;
+    		}
 
     		// Prepare environment variable prefix from input node
     		const inputNode = scene.find(s => s.role === "input");
@@ -12635,28 +12662,26 @@ var app = (function () {
 
     			const node = nodes[i];
 
-    			// Highlight the next node (if any), not the current node
-    			if (i + 1 < nodes.length) {
-    				nodes[i + 1].highlight = true;
+    			// Highlight current or next node and connecting edge
+    			if (i === 0 && startIndex > 0) {
+    				// Highlight starting node when resuming
+    				node.highlight = true;
+
+    				const prev = fullNodes[startIndex - 1];
+    				const edgeToStart = scene.find(e => e.type === "edge" && e.from === prev && e.to === node);
+    				if (edgeToStart) edgeToStart.highlight = true;
+    			} else {
+    				// Highlight next node (if any) and its edge
+    				if (i + 1 < nodes.length) {
+    					const next = nodes[i + 1];
+    					next.highlight = true;
+    					const edgeToNext = scene.find(e => e.type === "edge" && e.from === node && e.to === next);
+    					if (edgeToNext) edgeToNext.highlight = true;
+    				}
     			}
 
-    			// Always highlight the edge that is before the highlighted node
+    			// Trigger update for UI to reflect highlights
     			$$invalidate(1, scene = [...scene]);
-
-    			// if (i > 0) {
-    			//     const prev = nodes[i - 1];
-    			//     const edge = scene.find(
-    			//         (e) =>
-    			//             e.type === "edge" && e.from === prev && e.to === node,
-    			//     );
-    			//     if (edge) edge.highlight = true;
-    			// }
-    			// Also highlight the edge leading to the currently highlighted node (if any)
-    			if (i + 1 < nodes.length) {
-    				const next = nodes[i + 1];
-    				const edgeToNext = scene.find(e => e.type === "edge" && e.from === node && e.to === next);
-    				if (edgeToNext) edgeToNext.highlight = true;
-    			}
 
     			if (node.role === "default") {
     				// Trigger update for UI to reflect loading
@@ -12682,7 +12707,7 @@ var app = (function () {
     			}
 
     			// Delay after output update so user can perceive changes
-    			await new Promise(r => setTimeout(r, 500));
+    			await new Promise(r => setTimeout(r, 650));
     		}
 
     		$$invalidate(5, isRunning = false);

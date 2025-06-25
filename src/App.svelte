@@ -80,6 +80,37 @@
     let viewOffset = [0, 0];
     // Screen-space labels below each node
     let labels = [];
+    // Resizable info panel width
+    let panelWidth = 350;
+    let isResizing = false;
+    let panelResizeStartX = 0;
+    let panelResizeStartWidth = 0;
+
+    // Resize handlers for the info panel
+    function handlePanelResizeMouseDown(e) {
+        isResizing = true;
+        panelResizeStartX = e.clientX;
+        panelResizeStartWidth = panelWidth;
+        window.addEventListener('mousemove', handlePanelResizeMouseMove);
+        window.addEventListener('mouseup', handlePanelResizeMouseUp);
+        e.preventDefault();
+    }
+
+    function handlePanelResizeMouseMove(e) {
+        if (!isResizing) return;
+        const delta = panelResizeStartX - e.clientX;
+        const minWidth = 200;
+        const maxWidth = window.innerWidth - 100;
+        panelWidth = Math.max(minWidth, Math.min(maxWidth, panelResizeStartWidth + delta));
+    }
+
+    function handlePanelResizeMouseUp() {
+        if (isResizing) {
+            isResizing = false;
+            window.removeEventListener('mousemove', handlePanelResizeMouseMove);
+            window.removeEventListener('mouseup', handlePanelResizeMouseUp);
+        }
+    }
 
     function addCircle() {
         // Determine previous node: last prompt or input if first
@@ -624,6 +655,9 @@
     $: if (canvas) {
         const w = canvas.clientWidth;
         const h = canvas.clientHeight;
+        // Update canvas resolution to match CSS size
+        canvas.width = w * window.devicePixelRatio;
+        canvas.height = h * window.devicePixelRatio;
         labels = scene
             .filter((s) => s.type === "circle")
             .map((s) => {
@@ -759,13 +793,25 @@
         abort = true;
         isRunning = false;
     }
+    
+    // Copy current node output to clipboard
+    async function copyOutput() {
+        if (!selectedShape || !selectedShape.outputText) {
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(selectedShape.outputText);
+        } catch (err) {
+            console.error("Failed to copy output:", err);
+        }
+    }
     $: if (typeof window !== "undefined") {
         window.localStorage.setItem("scene", JSON.stringify(scene));
     }
 </script>
 
 <div class="app-wrap">
-    <div class="info-panel">
+    <div class="info-panel" style="width: {panelWidth}px;">
         {#if selectedShape}
             {#if selectedShape.role === "input"}
                 <h3>Input</h3>
@@ -777,6 +823,7 @@
                 <h3>Output</h3>
                 <label>Name: {selectedShape.name}</label>
                 <label>Output:</label>
+                <button class="copy-button" on:click={copyOutput}>Copy</button>
                 <textarea
                     rows="20"
                     readonly
@@ -785,13 +832,17 @@
             {:else}
                 <h3>Prompt</h3>
                 <label>Name: <input bind:value={selectedShape.name} /></label>
-                <label
-                    >Prompt: <input bind:value={selectedShape.command} /></label
-                >
+                <label>Prompt:</label>
+                <textarea
+                    rows="10"
+                    class="command-input"
+                    bind:value={selectedShape.command}
+                ></textarea>
                 <label class="hint"
                     >Use $INPUT to reference the previous node's output</label
                 >
                 <label>Output:</label>
+                <button class="copy-button" on:click={copyOutput}>Copy</button>
                 <textarea
                     rows="20"
                     readonly
@@ -800,6 +851,8 @@
             {/if}
         {/if}
     </div>
+    <!-- Resizer between info panel and canvas -->
+    <div class="resizer" on:mousedown={handlePanelResizeMouseDown}></div>
 
     <div class="canvas-container">
         <canvas bind:this={canvas}></canvas>
@@ -978,5 +1031,41 @@
         min-height: 350px;
         white-space: pre-wrap;
         overflow: auto;
+    }
+    /* Terminal-like styling for prompt command input */
+    .info-panel textarea.command-input {
+        background: #1e1e1e;
+        color: #f8f8f2;
+        font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        font-size: 0.9em;
+        line-height: 1.4;
+        min-height: 80px;
+        white-space: pre-wrap;
+        overflow: auto;
+    }
+    /* Copy button in info panel */
+    .info-panel button.copy-button {
+        background-color: var(--primary);
+        color: #fff;
+        border: none;
+        border-radius: var(--border-radius);
+        padding: 6px 12px;
+        font-size: 0.9em;
+        cursor: pointer;
+        margin-bottom: 8px;
+        transition: background-color var(--transition-duration) ease;
+    }
+    .info-panel button.copy-button:hover {
+        background-color: var(--primary-dark);
+    }
+    /* Resizer handle */
+    .resizer {
+        width: 8px;
+        cursor: col-resize;
+        height: 100%;
+        background-color: transparent;
+    }
+    .resizer:hover {
+        background-color: rgba(0, 0, 0, 0.1);
     }
 </style>

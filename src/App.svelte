@@ -3,6 +3,8 @@
 
     import reglLib from "regl";
     import { onMount } from "svelte";
+// File save dialog (Tauri)
+    import { open, save } from "@tauri-apps/plugin-dialog";
 
     let canvas;
     // Define consistent node colors: same for input/output, same for inner nodes
@@ -533,7 +535,10 @@
                 scene.splice(circleIdx, 1);
                 for (let i = scene.length - 1; i >= 0; i--) {
                     const s = scene[i];
-                    if (s.type === "edge" && (s.from === circle || s.to === circle)) {
+                    if (
+                        s.type === "edge" &&
+                        (s.from === circle || s.to === circle)
+                    ) {
                         scene.splice(i, 1);
                     }
                 }
@@ -624,14 +629,7 @@
             // Draw circles on top of edges
             scene.forEach((shape) => {
                 if (shape.type === "circle") {
-                    if (shape.highlight) {
-                        // Highlighted during play: fill with highlight color
-                        drawCircle({
-                            center: shape.center,
-                            radius: shape.radius,
-                            color: highlightColor,
-                        });
-                    } else if (shape.selected) {
+                    if (shape.selected) {
                         // Selected: draw an outline ring then fill
                         const outlineFactor = 1.2;
                         drawCircle({
@@ -643,6 +641,13 @@
                             center: shape.center,
                             radius: shape.radius,
                             color: shape.color,
+                        });
+                    } else if (shape.highlight) {
+                        // Highlighted during play: fill with highlight color
+                        drawCircle({
+                            center: shape.center,
+                            radius: shape.radius,
+                            color: highlightColor,
                         });
                     } else {
                         // Normal node
@@ -708,7 +713,7 @@
         }
         return cur === outputNode ? nodes : [];
     }
-    
+
     // Reactive flag: whether there is a valid path from input to output
     let hasPath = false;
     $: hasPath = (() => {
@@ -716,7 +721,6 @@
         scene;
         return getPipelineNodes().length > 0;
     })();
-
 
     async function runCommand(stdin, cmd) {
         let result = "";
@@ -787,18 +791,32 @@
                 s.selected = false;
             });
             const node = nodes[i];
-            node.highlight = true;
-            // Trigger reactive update so info panel shows current node
+            // Highlight the next node (if any), not the current node
+            if (i + 1 < nodes.length) {
+                nodes[i + 1].highlight = true;              
+            }
+            // Always highlight the edge that is before the highlighted node
             scene = [...scene];
-            if (i > 0) {
-                const prev = nodes[i - 1];
-                const edge = scene.find(
+            // if (i > 0) {
+            //     const prev = nodes[i - 1];
+            //     const edge = scene.find(
+            //         (e) =>
+            //             e.type === "edge" && e.from === prev && e.to === node,
+            //     );
+            //     if (edge) edge.highlight = true;
+            // }
+            // Also highlight the edge leading to the currently highlighted node (if any)
+            if (i + 1 < nodes.length) {
+                const next = nodes[i + 1];
+                const edgeToNext = scene.find(
                     (e) =>
-                        e.type === "edge" && e.from === prev && e.to === node,
+                        e.type === "edge" && e.from === node && e.to === next,
                 );
-                if (edge) edge.highlight = true;
+                if (edgeToNext) edgeToNext.highlight = true;
             }
             if (node.role === "default") {
+                // Trigger update for UI to reflect loading
+                scene = [...scene];
                 // Replace template variable {input} with output from previous node
                 const rawCmd = node.command.replace(/\{input\}/g, data);
                 const cmd = envPrefix ? `${envPrefix}${rawCmd}` : rawCmd;
@@ -826,7 +844,6 @@
         isRunning = false;
     }
 
-    // Copy current node output to clipboard
     async function copyOutput() {
         if (!selectedShape || !selectedShape.outputText) {
             return;
@@ -837,13 +854,38 @@
             console.error("Failed to copy output:", err);
         }
     }
-    // Placeholder handlers for import and export scene
-    function importScene() {
-        alert("Import scene clicked (placeholder)");
+
+    async function importScene() {
+        const file = await open({
+            multiple: false,
+            directory: false,
+            filters: [
+                {
+                    name: "My Filter",
+                    extensions: ["yaml"],
+                },
+            ],
+        });
+        console.log(file);
     }
 
-    function exportScene() {
-        alert("Export scene clicked (placeholder)");
+    // Prompt user to choose file path for exporting scene (dialog only)
+    async function exportScene() {
+        // Example filters: adjust name and extensions as needed
+        const path = await save({
+            filters: [
+                {
+                    name: "My Filter",
+                    extensions: ["yaml"],
+                },
+            ],
+        });
+        // Path is null if dialog was cancelled
+        if (path) {
+            console.log("Selected export path:", path);
+        } else {
+            console.log("Save dialog was cancelled");
+        }
     }
 
     $: if (typeof window !== "undefined") {
@@ -945,15 +987,38 @@
     </div>
 
     <div class="controls">
-        <button on:click={addCircle}>Add Step</button>
+        <button on:click={addCircle}>
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+            >
+                <path d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+            Add Step
+        </button>
         <button on:click={playPipeline} disabled={isRunning || !hasPath}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+            >
                 <path d="M8 5v14l11-7z" />
             </svg>
             Play
         </button>
         <button on:click={stopPipeline} disabled={!isRunning}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+            >
                 <path d="M6 6h12v12H6z" />
             </svg>
             Stop

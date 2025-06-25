@@ -48,6 +48,8 @@
         }
       ]
     },
-    "shell:default"
+    "shell:default",
+    "dialog:default",
+    "fs:default"
   ]
 }

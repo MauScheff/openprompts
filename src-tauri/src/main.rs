@@ -1,7 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::process::Command;
 use std::io::Write;
+use std::process::Command;
 
 /// Runs a shell command, returning the combined stdout and stderr output.
 #[tauri::command]
@@ -54,6 +54,8 @@ fn run_command(stdin: &str, cmd: &str) -> Result<String, String> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![run_command])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

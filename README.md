@@ -3,17 +3,21 @@
 WIP: Documentation in process...
 
 # Why?
-Makes it easy and flexible to design, iterate, persist, and share multi-step prompt flows.
+Makes it easy and flexible to design, iterate, save, and share multi-step prompt flows.
+- Why multi-step prompts? Let each prompt do one thing and it will do it better, rather than many tasks at the time.
+- Sometime you want to reuse prompts that you know work well, and sometimes this prompts are complex (eg. ongoing conversations midway, or glued prompts from different models).
+- Build the best prompts and share them with the community, then we can rank them and everyone can use the best prompt-flow for a given task and not have to reinvent the wheel.
+
 
 # Setup
-install rustup.    
-    1. Run `npm install` to pull in Vite, @sveltejs/vite-plugin-svelte and @tauri-apps packages.
-    2. During development:
-       • `npm run dev` to start Vite’s dev server.
-       • In another shell (or via `npm run tauri:dev`) launch the Tauri window pointing at localhost.
-    3. For production:
-       • `npm run build` to produce a `dist/` folder.
-       • `npm run tauri:build` to package your desktop app.
+1. install rustup.    
+2. Run `npm install` to pull in Vite, @sveltejs/vite-plugin-svelte and @tauri-apps packages.
+3. During development:
+   • `npm run dev` to start Vite’s dev server.
+   • In another shell (or via `npm run tauri:dev`) launch the Tauri window pointing at localhost.
+4. For production:
+   • `npm run build` to produce a `dist/` folder.
+   • `npm run tauri:build` to package your desktop app.
 
 # Examples
 Import the example flows in the examples folder.

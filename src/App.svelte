@@ -951,19 +951,36 @@
                 return;
             }
         }
-        // Update the scene state
-        // Ensure scene is an array of objects with required properties
-        scene = s.map((item) => {
-            if (typeof item !== "object" || item === null) {
-                return null;
+
+        const circles = s.filter((item) => item.type === "circle");
+        // Ensure input node has envVars property
+        circles.forEach((item) => {
+            if (item.role === "input" && item.envVars == null) {
+                item.envVars = [];
             }
-            return {
-                ...item,
-                // Add any default properties or values here
-            };
         });
 
-        scene = [...scene];
+        const edgesRaw = s.filter((item) => item.type === "edge");
+        const newScene = [...circles];
+        edgesRaw.forEach((e) => {
+            const fromNode = newScene.find(
+                (item) => item.type === "circle" && item.name === e.from.name,
+            );
+            const toNode = newScene.find(
+                (item) => item.type === "circle" && item.name === e.to.name,
+            );
+            if (fromNode && toNode) {
+                newScene.push({
+                    type: "edge",
+                    from: fromNode,
+                    to: toNode,
+                    color: e.color,
+                    selected: e.selected,
+                    highlight: e.highlight || false,
+                });
+            }
+        });
+        scene = newScene;
     }
 
     // Prompt user to choose file path for exporting scene (dialog only)

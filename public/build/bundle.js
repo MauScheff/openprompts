@@ -1,5 +1,5 @@
 
-(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35734/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
+(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35735/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
 var app = (function () {
     'use strict';
 
@@ -15267,7 +15267,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (1003:8) {#if selectedShape}
+    // (1020:8) {#if selectedShape}
     function create_if_block$_1(ctx) {
     	let if_block$_anchor$;
 
@@ -15312,14 +15312,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(1003:8) {#if selectedShape}",
+    		source: "(1020:8) {#if selectedShape}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1057:12) {:else}
+    // (1074:12) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -15366,26 +15366,26 @@ var app = (function () {
     			t12$ = space();
     			textarea1$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1utyf3b");
-    			add_location(h3$, file$, 1057, 16, 40845);
+    			add_location(h3$, file$, 1074, 16, 41507);
     			attr_dev(input$, "class", "svelte-1utyf3b");
-    			add_location(input$, file$, 1058, 29, 40890);
+    			add_location(input$, file$, 1075, 29, 41552);
     			attr_dev(label0$, "class", "svelte-1utyf3b");
-    			add_location(label0$, file$, 1058, 16, 40877);
+    			add_location(label0$, file$, 1075, 16, 41539);
     			attr_dev(label1$, "class", "svelte-1utyf3b");
-    			add_location(label1$, file$, 1059, 16, 40956);
+    			add_location(label1$, file$, 1076, 16, 41618);
     			attr_dev(textarea0$, "rows", "10");
     			attr_dev(textarea0$, "class", "command-input svelte-1utyf3b");
-    			add_location(textarea0$, file$, 1060, 16, 40996);
+    			add_location(textarea0$, file$, 1077, 16, 41658);
     			attr_dev(label2$, "class", "hint svelte-1utyf3b");
-    			add_location(label2$, file$, 1065, 16, 41178);
+    			add_location(label2$, file$, 1082, 16, 41840);
     			attr_dev(label3$, "class", "svelte-1utyf3b");
-    			add_location(label3$, file$, 1066, 16, 41258);
+    			add_location(label3$, file$, 1083, 16, 41920);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 1067, 16, 41297);
+    			add_location(button$, file$, 1084, 16, 41959);
     			attr_dev(textarea1$, "rows", "20");
     			textarea1$.readOnly = true;
     			attr_dev(textarea1$, "class", "svelte-1utyf3b");
-    			add_location(textarea1$, file$, 1068, 16, 41377);
+    			add_location(textarea1$, file$, 1085, 16, 42039);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -15458,14 +15458,14 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(1057:12) {:else}",
+    		source: "(1074:12) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1047:54) 
+    // (1064:54) 
     function create_if_block$_3(ctx) {
     	let h3$;
     	let t1$;
@@ -15499,17 +15499,17 @@ var app = (function () {
     			t8$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-1utyf3b");
-    			add_location(h3$, file$, 1047, 16, 40444);
+    			add_location(h3$, file$, 1064, 16, 41106);
     			attr_dev(label0$, "class", "svelte-1utyf3b");
-    			add_location(label0$, file$, 1048, 16, 40476);
+    			add_location(label0$, file$, 1065, 16, 41138);
     			attr_dev(label1$, "class", "svelte-1utyf3b");
-    			add_location(label1$, file$, 1049, 16, 40534);
+    			add_location(label1$, file$, 1066, 16, 41196);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 1050, 16, 40573);
+    			add_location(button$, file$, 1067, 16, 41235);
     			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-1utyf3b");
-    			add_location(textarea$, file$, 1051, 16, 40653);
+    			add_location(textarea$, file$, 1068, 16, 41315);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -15560,14 +15560,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_3.name,
     		type: "if",
-    		source: "(1047:54) ",
+    		source: "(1064:54) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1004:12) {#if selectedShape.role === "input"}
+    // (1021:12) {#if selectedShape.role === "input"}
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
@@ -15625,18 +15625,18 @@ var app = (function () {
     			button$ = element("button");
     			button$.textContent = "Add Variable";
     			attr_dev(h3$, "class", "svelte-1utyf3b");
-    			add_location(h3$, file$, 1004, 16, 38548);
+    			add_location(h3$, file$, 1021, 16, 39210);
     			attr_dev(label0$, "class", "svelte-1utyf3b");
-    			add_location(label0$, file$, 1005, 16, 38579);
+    			add_location(label0$, file$, 1022, 16, 39241);
     			attr_dev(label1$, "class", "svelte-1utyf3b");
-    			add_location(label1$, file$, 1006, 16, 38637);
+    			add_location(label1$, file$, 1023, 16, 39299);
     			attr_dev(textarea$, "rows", "5");
     			attr_dev(textarea$, "class", "svelte-1utyf3b");
-    			add_location(textarea$, file$, 1007, 16, 38675);
+    			add_location(textarea$, file$, 1024, 16, 39337);
     			attr_dev(label2$, "class", "svelte-1utyf3b");
-    			add_location(label2$, file$, 1009, 16, 38776);
+    			add_location(label2$, file$, 1026, 16, 39438);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 1036, 16, 39990);
+    			add_location(button$, file$, 1053, 16, 40652);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -15712,14 +15712,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(1004:12) {#if selectedShape.role === \\\"input\\\"}",
+    		source: "(1021:12) {#if selectedShape.role === \\\"input\\\"}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1011:16) {#each selectedShape.envVars as env, idx (idx)}
+    // (1028:16) {#each selectedShape.envVars as env, idx (idx)}
     function create_each_block$_1(key$_1, ctx) {
     	let div1$;
     	let div0$;
@@ -15757,17 +15757,17 @@ var app = (function () {
     			textarea$ = element("textarea");
     			attr_dev(input$, "placeholder", "Key");
     			attr_dev(input$, "class", "svelte-1utyf3b");
-    			add_location(input$, file$, 1013, 28, 38998);
+    			add_location(input$, file$, 1030, 28, 39660);
     			attr_dev(button$, "class", "copy-button svelte-1utyf3b");
-    			add_location(button$, file$, 1018, 28, 39237);
+    			add_location(button$, file$, 1035, 28, 39899);
     			attr_dev(div0$, "class", "env-key-row svelte-1utyf3b");
-    			add_location(div0$, file$, 1012, 24, 38944);
+    			add_location(div0$, file$, 1029, 24, 39606);
     			attr_dev(textarea$, "placeholder", "Value");
     			attr_dev(textarea$, "rows", "3");
     			attr_dev(textarea$, "class", "svelte-1utyf3b");
-    			add_location(textarea$, file$, 1028, 24, 39674);
+    			add_location(textarea$, file$, 1045, 24, 40336);
     			attr_dev(div1$, "class", "env-row svelte-1utyf3b");
-    			add_location(div1$, file$, 1011, 20, 38898);
+    			add_location(div1$, file$, 1028, 20, 39560);
     			this.first = div1$;
     		},
     		m: function mount(target, anchor) {
@@ -15815,14 +15815,14 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$_1.name,
     		type: "each",
-    		source: "(1011:16) {#each selectedShape.envVars as env, idx (idx)}",
+    		source: "(1028:16) {#each selectedShape.envVars as env, idx (idx)}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1083:12) {#if label.name}
+    // (1100:12) {#if label.name}
     function create_if_block$(ctx) {
     	let div$;
     	let t0$_value$ = /*label*/ ctx[41].name + "";
@@ -15837,7 +15837,7 @@ var app = (function () {
     			attr_dev(div$, "class", "node-label svelte-1utyf3b");
     			set_style(div$, "left", /*label*/ ctx[41].x + "px");
     			set_style(div$, "top", /*label*/ ctx[41].y + "px");
-    			add_location(div$, file$, 1083, 16, 41866);
+    			add_location(div$, file$, 1100, 16, 42528);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
@@ -15864,14 +15864,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(1083:12) {#if label.name}",
+    		source: "(1100:12) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1082:8) {#each labels as label, i (i)}
+    // (1099:8) {#each labels as label, i (i)}
     function create_each_block$(key$_1, ctx) {
     	let first$;
     	let if_block$_anchor$;
@@ -15918,7 +15918,7 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$.name,
     		type: "each",
-    		source: "(1082:8) {#each labels as label, i (i)}",
+    		source: "(1099:8) {#each labels as label, i (i)}",
     		ctx
     	});
 
@@ -16016,55 +16016,55 @@ var app = (function () {
     			button4$.textContent = "Export";
     			attr_dev(div0$, "class", "info-panel svelte-1utyf3b");
     			set_style(div0$, "width", /*panelWidth*/ ctx[3] + "px");
-    			add_location(div0$, file$, 1001, 4, 38399);
+    			add_location(div0$, file$, 1018, 4, 39061);
     			attr_dev(div1$, "class", "resizer svelte-1utyf3b");
-    			add_location(div1$, file$, 1077, 4, 41631);
+    			add_location(div1$, file$, 1094, 4, 42293);
     			attr_dev(canvas$, "class", "svelte-1utyf3b");
-    			add_location(canvas$, file$, 1080, 8, 41745);
+    			add_location(canvas$, file$, 1097, 8, 42407);
     			attr_dev(div2$, "class", "canvas-container svelte-1utyf3b");
-    			add_location(div2$, file$, 1079, 4, 41706);
+    			add_location(div2$, file$, 1096, 4, 42368);
     			attr_dev(path0$, "d", "M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z");
-    			add_location(path0$, file$, 1102, 16, 42369);
+    			add_location(path0$, file$, 1119, 16, 43031);
     			attr_dev(svg0$, "width", "16");
     			attr_dev(svg0$, "height", "16");
     			attr_dev(svg0$, "viewBox", "0 0 24 24");
     			attr_dev(svg0$, "fill", "currentColor");
     			attr_dev(svg0$, "aria-hidden", "true");
-    			add_location(svg0$, file$, 1095, 12, 42172);
+    			add_location(svg0$, file$, 1112, 12, 42834);
     			attr_dev(button0$, "class", "svelte-1utyf3b");
-    			add_location(button0$, file$, 1094, 8, 42130);
+    			add_location(button0$, file$, 1111, 8, 42792);
     			attr_dev(path1$, "d", "M8 5v14l11-7z");
-    			add_location(path1$, file$, 1114, 16, 42759);
+    			add_location(path1$, file$, 1131, 16, 43421);
     			attr_dev(svg1$, "width", "16");
     			attr_dev(svg1$, "height", "16");
     			attr_dev(svg1$, "viewBox", "0 0 24 24");
     			attr_dev(svg1$, "fill", "currentColor");
     			attr_dev(svg1$, "aria-hidden", "true");
-    			add_location(svg1$, file$, 1107, 12, 42562);
+    			add_location(svg1$, file$, 1124, 12, 43224);
     			button1$.disabled = button1$_disabled_value$ = /*isRunning*/ ctx[5] || !/*hasPath*/ ctx[6];
     			attr_dev(button1$, "class", "svelte-1utyf3b");
-    			add_location(button1$, file$, 1106, 8, 42484);
+    			add_location(button1$, file$, 1123, 8, 43146);
     			attr_dev(path2$, "d", "M6 6h12v12H6z");
-    			add_location(path2$, file$, 1126, 16, 43112);
+    			add_location(path2$, file$, 1143, 16, 43774);
     			attr_dev(svg2$, "width", "16");
     			attr_dev(svg2$, "height", "16");
     			attr_dev(svg2$, "viewBox", "0 0 24 24");
     			attr_dev(svg2$, "fill", "currentColor");
     			attr_dev(svg2$, "aria-hidden", "true");
-    			add_location(svg2$, file$, 1119, 12, 42915);
+    			add_location(svg2$, file$, 1136, 12, 43577);
     			button2$.disabled = button2$_disabled_value$ = !/*isRunning*/ ctx[5];
     			attr_dev(button2$, "class", "svelte-1utyf3b");
-    			add_location(button2$, file$, 1118, 8, 42848);
+    			add_location(button2$, file$, 1135, 8, 43510);
     			attr_dev(div3$, "class", "vertical-separator svelte-1utyf3b");
-    			add_location(div3$, file$, 1130, 8, 43201);
+    			add_location(div3$, file$, 1147, 8, 43863);
     			attr_dev(button3$, "class", "svelte-1utyf3b");
-    			add_location(button3$, file$, 1131, 8, 43248);
+    			add_location(button3$, file$, 1148, 8, 43910);
     			attr_dev(button4$, "class", "svelte-1utyf3b");
-    			add_location(button4$, file$, 1132, 8, 43303);
+    			add_location(button4$, file$, 1149, 8, 43965);
     			attr_dev(div4$, "class", "controls svelte-1utyf3b");
-    			add_location(div4$, file$, 1093, 4, 42099);
+    			add_location(div4$, file$, 1110, 4, 42761);
     			attr_dev(div5$, "class", "app-wrap svelte-1utyf3b");
-    			add_location(div5$, file$, 1000, 0, 38372);
+    			add_location(div5$, file$, 1017, 0, 39034);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -17159,17 +17159,35 @@ var app = (function () {
     			}
     		}
 
-    		// Update the scene state
-    		// Ensure scene is an array of objects with required properties
-    		$$invalidate(1, scene = s.map(item => {
-    			if (typeof item !== "object" || item === null) {
-    				return null;
+    		const circles = s.filter(item => item.type === "circle");
+
+    		// Ensure input node has envVars property
+    		circles.forEach(item => {
+    			if (item.role === "input" && item.envVars == null) {
+    				item.envVars = [];
     			}
+    		});
 
-    			return { ...item }; // Add any default properties or values here
-    		}));
+    		const edgesRaw = s.filter(item => item.type === "edge");
+    		const newScene = [...circles];
 
-    		$$invalidate(1, scene = [...scene]);
+    		edgesRaw.forEach(e => {
+    			const fromNode = newScene.find(item => item.type === "circle" && item.name === e.from.name);
+    			const toNode = newScene.find(item => item.type === "circle" && item.name === e.to.name);
+
+    			if (fromNode && toNode) {
+    				newScene.push({
+    					type: "edge",
+    					from: fromNode,
+    					to: toNode,
+    					color: e.color,
+    					selected: e.selected,
+    					highlight: e.highlight || false
+    				});
+    			}
+    		});
+
+    		$$invalidate(1, scene = newScene);
     	}
 
     	// Prompt user to choose file path for exporting scene (dialog only)

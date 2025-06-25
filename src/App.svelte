@@ -5,6 +5,10 @@
     import { onMount } from "svelte";
 // File save dialog (Tauri)
     import { open, save } from "@tauri-apps/plugin-dialog";
+    import { parseFromYaml, parseToYaml } from "./yaml.js";
+// import { readFile } from "@tauri-apps/plugin-fs";
+    // import * as path from "@tauri-apps/api/path";
+    import { create, readTextFile } from "@tauri-apps/plugin-fs";
 
     let canvas;
     // Define consistent node colors: same for input/output, same for inner nodes
@@ -700,9 +704,9 @@
         const outputNode = scene.find((s) => s.role === "output");
         if (!inputNode || !outputNode) return [];
 
-        const nodes = scene.filter(s => s.type === 'circle');
-        const edges = scene.filter(s => s.type === 'edge');
-        const adj = new Map(nodes.map(n => [n, []]));
+        const nodes = scene.filter((s) => s.type === "circle");
+        const edges = scene.filter((s) => s.type === "edge");
+        const adj = new Map(nodes.map((n) => [n, []]));
         for (const edge of edges) {
             if (adj.has(edge.from)) {
                 adj.get(edge.from).push(edge.to);
@@ -711,7 +715,7 @@
 
         const queue = [inputNode];
         const seen = new Set([inputNode]);
-        while(queue.length > 0) {
+        while (queue.length > 0) {
             const curr = queue.shift();
             if (curr === outputNode) {
                 return [inputNode, outputNode]; // Found a path, return non-empty array
@@ -816,15 +820,20 @@
                 queue.push(node);
             }
         }
-        
+
         // Set initial input
         if (inputNode) {
             nodeOutputs.set(inputNode, inputNode.inputText);
         }
 
         // Prepare environment variables from input node
-        const envVars = (inputNode.envVars || []).filter((e) => e.key && e.value);
-        const envPrefix = envVars.length > 0 ? envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; " : "";
+        const envVars = (inputNode.envVars || []).filter(
+            (e) => e.key && e.value,
+        );
+        const envPrefix =
+            envVars.length > 0
+                ? envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; "
+                : "";
 
         while (queue.length > 0 && !abort) {
             const currentBatch = queue;
@@ -832,7 +841,7 @@
 
             // Highlight all nodes in the current batch
             scene.forEach((s) => (s.highlight = false));
-            currentBatch.forEach(node => node.highlight = true);
+            currentBatch.forEach((node) => (node.highlight = true));
             scene = [...scene];
 
             const promises = currentBatch.map(async (node) => {
@@ -842,22 +851,26 @@
                 const parentEdges = edges.filter((e) => e.to === node);
                 let inputData;
 
-                if (node.role === 'input') {
+                if (node.role === "input") {
                     inputData = node.inputText;
                 } else {
                     const parentOutputs = parentEdges.map((e) => {
                         if (!nodeOutputs.has(e.from)) {
-                            console.error(`Output not found for parent ${e.from.name} of ${node.name}`);
-                            return '';
+                            console.error(
+                                `Output not found for parent ${e.from.name} of ${node.name}`,
+                            );
+                            return "";
                         }
                         return nodeOutputs.get(e.from);
                     });
-                    inputData = parentOutputs.join('\n');
+                    inputData = parentOutputs.join("\n");
                 }
 
                 let outputData = inputData;
                 if (node.role === "default") {
-                    const rawCmd = node.command.trim().replace(/{input}/g, inputData);
+                    const rawCmd = node.command
+                        .trim()
+                        .replace(/{input}/g, inputData);
                     const cmd = envPrefix ? `${envPrefix}${rawCmd}` : rawCmd;
                     console.log(`Running command on node ${node.name}: ${cmd}`);
                     outputData = await runCommand(inputData, cmd);
@@ -865,15 +878,19 @@
                 } else if (node.role === "output") {
                     node.outputText = inputData;
                 }
-                
+
                 nodeOutputs.set(node, outputData);
                 executedNodes.add(node);
 
                 // Add successors to the next batch if all their parents are done
                 const successors = adj.get(node) || [];
                 for (const successor of successors) {
-                    const parentsOfSuccessor = edges.filter((e) => e.to === successor).map((e) => e.from);
-                    const allParentsDone = parentsOfSuccessor.every((p) => executedNodes.has(p));
+                    const parentsOfSuccessor = edges
+                        .filter((e) => e.to === successor)
+                        .map((e) => e.from);
+                    const allParentsDone = parentsOfSuccessor.every((p) =>
+                        executedNodes.has(p),
+                    );
                     if (allParentsDone) {
                         queue.push(successor);
                     }
@@ -920,7 +937,33 @@
                 },
             ],
         });
-        console.log(file);
+        const sceneYaml = await readTextFile(file);
+        const s = await parseFromYaml(sceneYaml);
+        // Validate scene structure
+        if (!Array.isArray(s) || s.length === 0) {
+            alert("Invalid scene format. Please check the YAML file.");
+            return;
+        }
+        // Ensure scene is an array of objects with required properties
+        for (const item of s) {
+            if (typeof item !== "object" || item === null) {
+                alert("Invalid scene format. Please check the YAML file.");
+                return;
+            }
+        }
+        // Update the scene state
+        // Ensure scene is an array of objects with required properties
+        scene = s.map((item) => {
+            if (typeof item !== "object" || item === null) {
+                return null;
+            }
+            return {
+                ...item,
+                // Add any default properties or values here
+            };
+        });
+
+        scene = [...scene];
     }
 
     // Prompt user to choose file path for exporting scene (dialog only)
@@ -934,12 +977,20 @@
                 },
             ],
         });
+
         // Path is null if dialog was cancelled
         if (path) {
             console.log("Selected export path:", path);
         } else {
             console.log("Save dialog was cancelled");
         }
+
+        const yaml = parseToYaml(scene);
+        const file = await create(path, {
+            overwrite: true,
+        });
+        await file.write(new TextEncoder().encode(yaml));
+        await file.close();
     }
 
     $: if (typeof window !== "undefined") {

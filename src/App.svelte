@@ -98,8 +98,8 @@
         isResizing = true;
         panelResizeStartX = e.clientX;
         panelResizeStartWidth = panelWidth;
-        window.addEventListener('mousemove', handlePanelResizeMouseMove);
-        window.addEventListener('mouseup', handlePanelResizeMouseUp);
+        window.addEventListener("mousemove", handlePanelResizeMouseMove);
+        window.addEventListener("mouseup", handlePanelResizeMouseUp);
         e.preventDefault();
     }
 
@@ -108,14 +108,17 @@
         const delta = panelResizeStartX - e.clientX;
         const minWidth = 200;
         const maxWidth = window.innerWidth - 100;
-        panelWidth = Math.max(minWidth, Math.min(maxWidth, panelResizeStartWidth + delta));
+        panelWidth = Math.max(
+            minWidth,
+            Math.min(maxWidth, panelResizeStartWidth + delta),
+        );
     }
 
     function handlePanelResizeMouseUp() {
         if (isResizing) {
             isResizing = false;
-            window.removeEventListener('mousemove', handlePanelResizeMouseMove);
-            window.removeEventListener('mouseup', handlePanelResizeMouseUp);
+            window.removeEventListener("mousemove", handlePanelResizeMouseMove);
+            window.removeEventListener("mouseup", handlePanelResizeMouseUp);
         }
     }
 
@@ -760,10 +763,13 @@
         let data = scene.find((s) => s.role === "input").inputText;
         // Prepare environment variable prefix from input node
         const inputNode = scene.find((s) => s.role === "input");
-        const envVars = (inputNode.envVars || []).filter(e => e.key && e.value);
+        const envVars = (inputNode.envVars || []).filter(
+            (e) => e.key && e.value,
+        );
         let envPrefix = "";
         if (envVars.length > 0) {
-            envPrefix = envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; ";
+            envPrefix =
+                envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; ";
         }
         for (let i = 0; i < nodes.length && !abort; i++) {
             // Clear previous highlights and selections so info follows the play
@@ -787,7 +793,9 @@
                 // Replace template variable {input} with output from previous node
                 const rawCmd = node.command.replace(/\{input\}/g, data);
                 const cmd = envPrefix ? `${envPrefix}${rawCmd}` : rawCmd;
-                console.log(`Running command on node ${node.name}: ${cmd} with stdin: ${data}`);
+                console.log(
+                    `Running command on node ${node.name}: ${cmd} with stdin: ${data}`,
+                );
                 data = await runCommand(data, cmd);
                 console.log("Command output:", data);
                 // Store and show intermediate output
@@ -808,7 +816,7 @@
         abort = true;
         isRunning = false;
     }
-    
+
     // Copy current node output to clipboard
     async function copyOutput() {
         if (!selectedShape || !selectedShape.outputText) {
@@ -820,6 +828,15 @@
             console.error("Failed to copy output:", err);
         }
     }
+    // Placeholder handlers for import and export scene
+    function importScene() {
+        alert("Import scene clicked (placeholder)");
+    }
+
+    function exportScene() {
+        alert("Export scene clicked (placeholder)");
+    }
+
     $: if (typeof window !== "undefined") {
         window.localStorage.setItem("scene", JSON.stringify(scene));
     }
@@ -832,7 +849,8 @@
                 <h3>Input</h3>
                 <label>Name: {selectedShape.name}</label>
                 <label>Input:</label>
-                <textarea rows="5" bind:value={selectedShape.inputText}></textarea>
+                <textarea rows="5" bind:value={selectedShape.inputText}
+                ></textarea>
                 <label>Environment Variables:</label>
                 {#each selectedShape.envVars as env, idx (idx)}
                     <div class="env-row">
@@ -842,7 +860,8 @@
                                 bind:value={env.key}
                                 on:input={() => (scene = [...scene])}
                             />
-                            <button class="copy-button"
+                            <button
+                                class="copy-button"
                                 on:click={() => {
                                     selectedShape.envVars.splice(idx, 1);
                                     scene = [...scene];
@@ -859,7 +878,8 @@
                         ></textarea>
                     </div>
                 {/each}
-                <button class="copy-button"
+                <button
+                    class="copy-button"
                     on:click={() => {
                         selectedShape.envVars = selectedShape.envVars || [];
                         selectedShape.envVars.push({ key: "", value: "" });
@@ -887,9 +907,7 @@
                     class="command-input"
                     bind:value={selectedShape.command}
                 ></textarea>
-                <label class="hint"
-                    >Define variables in the input node.</label
-                >
+                <label class="hint">Define variables in the input node.</label>
                 <label>Output:</label>
                 <button class="copy-button" on:click={copyOutput}>Copy</button>
                 <textarea
@@ -919,8 +937,21 @@
 
     <div class="controls">
         <button on:click={addCircle}>Add Step</button>
-        <button on:click={playPipeline} disabled={isRunning}>Play</button>
-        <button on:click={stopPipeline} disabled={!isRunning}>Stop</button>
+        <button on:click={playPipeline} disabled={isRunning}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+            </svg>
+            Play
+        </button>
+        <button on:click={stopPipeline} disabled={!isRunning}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M6 6h12v12H6z" />
+            </svg>
+            Stop
+        </button>
+        <div class="vertical-separator"></div>
+        <button on:click={importScene}>Import</button>
+        <button on:click={exportScene}>Export</button>
     </div>
 </div>
 
@@ -997,6 +1028,9 @@
         font-weight: 500;
         cursor: pointer;
         transition: background-color var(--transition-duration) ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
     .controls button:hover:not(:disabled) {
         background-color: var(--primary-dark);
@@ -1005,6 +1039,13 @@
         background-color: #e0e0e0;
         color: #999;
         cursor: default;
+    }
+    /* Subtle vertical separator between control groups */
+    .vertical-separator {
+        width: 1px;
+        height: 24px;
+        background-color: rgba(0, 0, 0, 0.12);
+        align-self: center;
     }
     .info-panel {
         /* Static right panel, full height */

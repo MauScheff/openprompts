@@ -10,6 +10,21 @@
     // import * as path from "@tauri-apps/api/path";
     import { create, readTextFile } from "@tauri-apps/plugin-fs";
 
+    let sceneTitleEl;
+
+    onMount(() => {
+        const handleWindowMousedown = (e) => {
+            if (sceneTitleEl && !sceneTitleEl.contains(e.target)) {
+                sceneTitleEl.blur();
+            }
+        };
+        window.addEventListener("mousedown", handleWindowMousedown);
+
+        return () => {
+            window.removeEventListener("mousedown", handleWindowMousedown);
+        };
+    });
+
     let canvas;
     // Define consistent node colors: same for input/output, same for inner nodes
     // Node color palette for high contrast against dark background
@@ -30,7 +45,7 @@
             try {
                 const parsed = JSON.parse(saved);
                 if (parsed && typeof parsed === 'object' && parsed.hasOwnProperty('scene')) {
-                    sceneName = parsed.name || "Untitled Scene";
+                    sceneName = parsed.name || "Untitled Flow";
                     const sceneData = parsed.scene || [];
                     
                     const circles = sceneData.filter((s) => s.type === "circle");
@@ -64,22 +79,22 @@
                 } else {
                     // Old format or corrupted, initialize a new scene
                     scene = [];
-                    sceneName = "Untitled Scene";
+                    sceneName = "Untitled Flow";
                 }
             } catch (err) {
                 console.error("Failed to load scene from localStorage:", err);
                 scene = [];
-                sceneName = "Untitled Scene";
+                sceneName = "Untitled Flow";
             }
         } else {
             // No saved data, initialize a new scene
             scene = [];
-            sceneName = "Untitled Scene";
+            sceneName = "Untitled Flow";
         }
     } else {
         // SSR
         scene = [];
-        sceneName = "Untitled Scene";
+        sceneName = "Untitled Flow";
     }
     // View transform for positioning and zoom
     let viewScale = 1;
@@ -127,7 +142,7 @@
             type: "circle",
             role: "default",
             name: `Prompt ${scene.filter((s) => s.type === "circle").length - 1}`,
-            command: "echo {input}",
+            command: "echo 'hello'",
             center: [x, y],
             radius: 0.1,
             color: defaultNodeColor,
@@ -912,7 +927,7 @@
                 highlight: false,
             },
         ];
-        sceneName = "Untitled Scene";
+        sceneName = "Untitled Flow";
     }
 
     async function copyOutput() {
@@ -944,7 +959,7 @@
             alert("Invalid scene format. Please check the YAML file.");
             return;
         }
-        sceneName = s.name || "Untitled Scene";
+        sceneName = s.name || "Untitled Flow";
         const sceneData = s.scene;
 
         const circles = sceneData.filter((item) => item.type === "circle");
@@ -976,6 +991,8 @@
             }
         });
         scene = newScene;
+        // HACK: This is a workaround to force Svelte to update the scene name
+        sceneName = sceneName;
     }
 
     // Prompt user to choose file path for exporting scene (dialog only)
@@ -1011,13 +1028,31 @@
             JSON.stringify({ name: sceneName, scene: scene }),
         );
     }
+
+    function handleSceneTitleKeydown(e) {
+        if (e.key === "Enter" || e.key === "Escape") {
+            e.preventDefault();
+            e.target.blur();
+        }
+    }
+
+    function handleSceneTitleBlur(e) {
+        if (e.target.innerText.trim() === "") {
+            sceneName = "Untitled Flow";
+            e.target.innerText = "Untitled Flow";
+        } else {
+            sceneName = e.target.innerText;
+        }
+    }
 </script>
 
 <div class="app-wrap">
     <h1
         class="scene-title"
         contenteditable="true"
-        on:blur={(e) => (sceneName = e.target.innerText)}
+        bind:this={sceneTitleEl}
+        on:blur={handleSceneTitleBlur}
+        on:keydown={handleSceneTitleKeydown}
     >
         {sceneName}
     </h1>

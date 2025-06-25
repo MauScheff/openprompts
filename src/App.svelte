@@ -699,19 +699,33 @@
         const inputNode = scene.find((s) => s.role === "input");
         const outputNode = scene.find((s) => s.role === "output");
         if (!inputNode || !outputNode) return [];
-        const nodes = [inputNode];
-        let cur = inputNode;
-        const seen = new Set([inputNode]);
-        while (cur !== outputNode) {
-            const edge = scene.find((e) => e.type === "edge" && e.from === cur);
-            if (!edge) break;
-            const nxt = edge.to;
-            if (seen.has(nxt)) break;
-            nodes.push(nxt);
-            seen.add(nxt);
-            cur = nxt;
+
+        const nodes = scene.filter(s => s.type === 'circle');
+        const edges = scene.filter(s => s.type === 'edge');
+        const adj = new Map(nodes.map(n => [n, []]));
+        for (const edge of edges) {
+            if (adj.has(edge.from)) {
+                adj.get(edge.from).push(edge.to);
+            }
         }
-        return cur === outputNode ? nodes : [];
+
+        const queue = [inputNode];
+        const seen = new Set([inputNode]);
+        while(queue.length > 0) {
+            const curr = queue.shift();
+            if (curr === outputNode) {
+                return [inputNode, outputNode]; // Found a path, return non-empty array
+            }
+            const successors = adj.get(curr) || [];
+            for (const successor of successors) {
+                if (!seen.has(successor)) {
+                    seen.add(successor);
+                    queue.push(successor);
+                }
+            }
+        }
+
+        return []; // No path found
     }
 
     // Reactive flag: whether there is a valid path from input to output
@@ -766,92 +780,117 @@
 
     async function playPipeline() {
         if (isRunning) return;
-        // Determine pipeline nodes, optionally starting from selected node
-        const fullNodes = getPipelineNodes();
-        if (fullNodes.length === 0) {
-            alert("No path from input to output");
+
+        const nodes = scene.filter((s) => s.type === "circle");
+        const edges = scene.filter((s) => s.type === "edge");
+        const inputNode = nodes.find((n) => n.role === "input");
+        const outputNode = nodes.find((n) => n.role === "output");
+
+        if (!inputNode || !outputNode) {
+            alert("Input and Output nodes must be defined.");
             return;
         }
-        // Determine start index based on selected node
-        let startIndex = 0;
-        const selectedNode = scene.find((s) => s.type === "circle" && s.selected);
-        if (selectedNode) {
-            const idx = fullNodes.indexOf(selectedNode);
-            if (idx >= 0) {
-                startIndex = idx;
+
+        // Build graph and in-degrees
+        const adj = new Map(nodes.map((n) => [n, []]));
+        const inDegree = new Map(nodes.map((n) => [n, 0]));
+        edges.forEach((edge) => {
+            if (adj.has(edge.from)) {
+                adj.get(edge.from).push(edge.to);
             }
-        }
-        // Pipeline nodes to execute
-        const nodes = fullNodes.slice(startIndex);
+            if (inDegree.has(edge.to)) {
+                inDegree.set(edge.to, inDegree.get(edge.to) + 1);
+            }
+        });
+
         isRunning = true;
         abort = false;
-        // Initialize data based on startIndex and previous node's output or input
-        let data;
-        if (startIndex > 0) {
-            const prev = fullNodes[startIndex - 1];
-            data = prev.role === "input" ? prev.inputText : prev.outputText;
-        } else {
-            data = scene.find((s) => s.role === "input").inputText;
+
+        const nodeOutputs = new Map();
+        const executedNodes = new Set();
+        let queue = [];
+
+        // Start with nodes that have no incoming edges (usually just the input node)
+        for (const [node, degree] of inDegree.entries()) {
+            if (degree === 0) {
+                queue.push(node);
+            }
         }
-        // Prepare environment variable prefix from input node
-        const inputNode = scene.find((s) => s.role === "input");
+        
+        // Set initial input
+        if (inputNode) {
+            nodeOutputs.set(inputNode, inputNode.inputText);
+        }
+
+        // Prepare environment variables from input node
         const envVars = (inputNode.envVars || []).filter((e) => e.key && e.value);
-        let envPrefix = "";
-        if (envVars.length > 0) {
-            envPrefix = envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; ";
-        }
-        for (let i = 0; i < nodes.length && !abort; i++) {
-            // Clear previous highlights and selections so info follows the play
-            scene.forEach((s) => {
-                s.highlight = false;
-                s.selected = false;
-            });
-            const node = nodes[i];
-            // Highlight current or next node and connecting edge
-            if (i === 0 && startIndex > 0) {
-                // Highlight starting node when resuming
-                node.highlight = true;
-                const prev = fullNodes[startIndex - 1];
-                const edgeToStart = scene.find(
-                    (e) => e.type === "edge" && e.from === prev && e.to === node
-                );
-                if (edgeToStart) edgeToStart.highlight = true;
-            } else {
-                // Highlight next node (if any) and its edge
-                if (i + 1 < nodes.length) {
-                    const next = nodes[i + 1];
-                    next.highlight = true;
-                    const edgeToNext = scene.find(
-                        (e) => e.type === "edge" && e.from === node && e.to === next
-                    );
-                    if (edgeToNext) edgeToNext.highlight = true;
-                }
-            }
-            // Trigger update for UI to reflect highlights
+        const envPrefix = envVars.length > 0 ? envVars.map((e) => `${e.key}='${e.value}'`).join("; ") + "; " : "";
+
+        while (queue.length > 0 && !abort) {
+            const currentBatch = queue;
+            queue = [];
+
+            // Highlight all nodes in the current batch
+            scene.forEach((s) => (s.highlight = false));
+            currentBatch.forEach(node => node.highlight = true);
             scene = [...scene];
-            if (node.role === "default") {
-                // Trigger update for UI to reflect loading
+
+            const promises = currentBatch.map(async (node) => {
+                if (abort) return;
+
+                // Gather inputs from parent nodes
+                const parentEdges = edges.filter((e) => e.to === node);
+                let inputData;
+
+                if (node.role === 'input') {
+                    inputData = node.inputText;
+                } else {
+                    const parentOutputs = parentEdges.map((e) => {
+                        if (!nodeOutputs.has(e.from)) {
+                            console.error(`Output not found for parent ${e.from.name} of ${node.name}`);
+                            return '';
+                        }
+                        return nodeOutputs.get(e.from);
+                    });
+                    inputData = parentOutputs.join('\n');
+                }
+
+                let outputData = inputData;
+                if (node.role === "default") {
+                    const rawCmd = node.command.trim().replace(/{input}/g, inputData);
+                    const cmd = envPrefix ? `${envPrefix}${rawCmd}` : rawCmd;
+                    console.log(`Running command on node ${node.name}: ${cmd}`);
+                    outputData = await runCommand(inputData, cmd);
+                    node.outputText = outputData;
+                } else if (node.role === "output") {
+                    node.outputText = inputData;
+                }
+                
+                nodeOutputs.set(node, outputData);
+                executedNodes.add(node);
+
+                // Add successors to the next batch if all their parents are done
+                const successors = adj.get(node) || [];
+                for (const successor of successors) {
+                    const parentsOfSuccessor = edges.filter((e) => e.to === successor).map((e) => e.from);
+                    const allParentsDone = parentsOfSuccessor.every((p) => executedNodes.has(p));
+                    if (allParentsDone) {
+                        queue.push(successor);
+                    }
+                }
                 scene = [...scene];
-                // Replace template variable {input} with output from previous node
-                const rawCmd = node.command.replace(/\{input\}/g, data);
-                const cmd = envPrefix ? `${envPrefix}${rawCmd}` : rawCmd;
-                console.log(
-                    `Running command on node ${node.name}: ${cmd} with stdin: ${data}`,
-                );
-                data = await runCommand(data, cmd);
-                console.log("Command output:", data);
-                // Store and show intermediate output
-                node.outputText = data;
-                scene = [...scene];
-            } else if (node.role === "output") {
-                node.outputText = data;
-                // Ensure final output stays shown
-                scene = [...scene];
+            });
+
+            await Promise.all(promises);
+            if (!abort) {
+                await new Promise((r) => setTimeout(r, 650));
             }
-            // Delay after output update so user can perceive changes
-            await new Promise((r) => setTimeout(r, 650));
         }
+
         isRunning = false;
+        // Clear highlights
+        scene.forEach((s) => (s.highlight = false));
+        scene = [...scene];
     }
 
     function stopPipeline() {

@@ -2,6 +2,9 @@
 
 WIP: Documentation in process...
 
+# Why?
+Makes it easy and flexible to design, iterate, persist, and share multi-step prompt flows.
+
 # Setup
 install rustup.    
     1. Run `npm install` to pull in Vite, @sveltejs/vite-plugin-svelte and @tauri-apps packages.

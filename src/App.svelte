@@ -684,6 +684,8 @@
 
     let isRunning = false;
     let abort = false;
+    let currentNode = null;
+    $: inspectorNode = isRunning ? currentNode : selectedShape;
 
     function getPipelineNodes() {
         const inputNode = scene.find((s) => s.role === "input");
@@ -832,6 +834,7 @@
 
             const promises = currentBatch.map(async (node) => {
                 if (abort) return;
+                currentNode = node;
 
                 // Gather inputs from parent nodes
                 const parentEdges = edges.filter((e) => e.to === node);
@@ -891,8 +894,15 @@
         }
 
         isRunning = false;
+        currentNode = null;
         // Clear highlights
         scene.forEach((s) => (s.highlight = false));
+        // Select the output node to show the final result
+        const outputNode = scene.find((s) => s.role === "output");
+        if (outputNode) {
+            scene.forEach((s) => (s.selected = false));
+            outputNode.selected = true;
+        }
         scene = [...scene];
     }
 
@@ -1057,28 +1067,33 @@
         {sceneName}
     </h1>
     <div class="info-panel" style="width: {panelWidth}px;">
-        {#if selectedShape}
-            {#if selectedShape.role === "input"}
+        {#if inspectorNode}
+            {#if inspectorNode.role === "input"}
                 <h3>Input</h3>
-                <label>Name: {selectedShape.name}</label>
+                <label>Name: {inspectorNode.name}</label>
                 <label>Input:</label>
-                <textarea rows="5" bind:value={selectedShape.inputText}
+                <textarea
+                    rows="5"
+                    bind:value={inspectorNode.inputText}
+                    disabled={isRunning}
                 ></textarea>
                 <label>Environment Variables:</label>
-                {#each selectedShape.envVars as env, idx (idx)}
+                {#each inspectorNode.envVars as env, idx (idx)}
                     <div class="env-row">
                         <div class="env-key-row">
                             <input
                                 placeholder="Key"
                                 bind:value={env.key}
                                 on:input={() => (scene = [...scene])}
+                                disabled={isRunning}
                             />
                             <button
                                 class="copy-button"
                                 on:click={() => {
-                                    selectedShape.envVars.splice(idx, 1);
+                                    inspectorNode.envVars.splice(idx, 1);
                                     scene = [...scene];
                                 }}
+                                disabled={isRunning}
                             >
                                 Remove
                             </button>
@@ -1088,37 +1103,45 @@
                             rows="3"
                             bind:value={env.value}
                             on:input={() => (scene = [...scene])}
+                            disabled={isRunning}
                         ></textarea>
                     </div>
                 {/each}
                 <button
                     class="copy-button"
                     on:click={() => {
-                        selectedShape.envVars = selectedShape.envVars || [];
-                        selectedShape.envVars.push({ key: "", value: "" });
+                        inspectorNode.envVars = inspectorNode.envVars || [];
+                        inspectorNode.envVars.push({ key: "", value: "" });
                         scene = [...scene];
                     }}
+                    disabled={isRunning}
                 >
                     Add Variable
                 </button>
-            {:else if selectedShape.role === "output"}
+            {:else if inspectorNode.role === "output"}
                 <h3>Output</h3>
-                <label>Name: {selectedShape.name}</label>
+                <label>Name: {inspectorNode.name}</label>
                 <label>Output:</label>
                 <button class="copy-button" on:click={copyOutput}>Copy</button>
                 <textarea
                     rows="20"
                     readonly
-                    bind:value={selectedShape.outputText}
+                    bind:value={inspectorNode.outputText}
                 ></textarea>
             {:else}
                 <h3>Prompt</h3>
-                <label>Name: <input bind:value={selectedShape.name} /></label>
+                <label
+                    >Name: <input
+                        bind:value={inspectorNode.name}
+                        disabled={isRunning}
+                    /></label
+                >
                 <label>Command:</label>
                 <textarea
                     rows="10"
                     class="command-input"
-                    bind:value={selectedShape.command}
+                    bind:value={inspectorNode.command}
+                    disabled={isRunning}
                 ></textarea>
                 <label class="hint">Define variables in the input node.</label>
                 <label>Output:</label>
@@ -1126,7 +1149,7 @@
                 <textarea
                     rows="20"
                     readonly
-                    bind:value={selectedShape.outputText}
+                    bind:value={inspectorNode.outputText}
                 ></textarea>
             {/if}
         {/if}

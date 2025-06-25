@@ -15274,7 +15274,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (1064:8) {#if inspectorNode}
+    // (1084:8) {#if inspectorNode}
     function create_if_block$_1(ctx) {
     	let if_block$_anchor$;
 
@@ -15319,14 +15319,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_1.name,
     		type: "if",
-    		source: "(1064:8) {#if inspectorNode}",
+    		source: "(1084:8) {#if inspectorNode}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1125:12) {:else}
+    // (1145:12) {:else}
     function create_else_block$(ctx) {
     	let h3$;
     	let t1$;
@@ -15373,28 +15373,28 @@ var app = (function () {
     			t12$ = space();
     			textarea1$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-uzk6d");
-    			add_location(h3$, file$, 1125, 16, 43180);
+    			add_location(h3$, file$, 1145, 16, 43635);
     			input$.disabled = /*isRunning*/ ctx[3];
     			attr_dev(input$, "class", "svelte-uzk6d");
-    			add_location(input$, file$, 1127, 27, 43246);
+    			add_location(input$, file$, 1147, 27, 43701);
     			attr_dev(label0$, "class", "svelte-uzk6d");
-    			add_location(label0$, file$, 1126, 16, 43212);
+    			add_location(label0$, file$, 1146, 16, 43667);
     			attr_dev(label1$, "class", "svelte-uzk6d");
-    			add_location(label1$, file$, 1132, 16, 43418);
+    			add_location(label1$, file$, 1152, 16, 43873);
     			attr_dev(textarea0$, "rows", "10");
     			attr_dev(textarea0$, "class", "command-input svelte-uzk6d");
     			textarea0$.disabled = /*isRunning*/ ctx[3];
-    			add_location(textarea0$, file$, 1133, 16, 43458);
+    			add_location(textarea0$, file$, 1153, 16, 43913);
     			attr_dev(label2$, "class", "hint svelte-uzk6d");
-    			add_location(label2$, file$, 1139, 16, 43681);
+    			add_location(label2$, file$, 1159, 16, 44136);
     			attr_dev(label3$, "class", "svelte-uzk6d");
-    			add_location(label3$, file$, 1140, 16, 43761);
+    			add_location(label3$, file$, 1160, 16, 44216);
     			attr_dev(button$, "class", "copy-button svelte-uzk6d");
-    			add_location(button$, file$, 1141, 16, 43800);
+    			add_location(button$, file$, 1161, 16, 44255);
     			attr_dev(textarea1$, "rows", "20");
     			textarea1$.readOnly = true;
     			attr_dev(textarea1$, "class", "svelte-uzk6d");
-    			add_location(textarea1$, file$, 1142, 16, 43880);
+    			add_location(textarea1$, file$, 1162, 16, 44335);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -15475,14 +15475,14 @@ var app = (function () {
     		block: block$,
     		id: create_else_block$.name,
     		type: "else",
-    		source: "(1125:12) {:else}",
+    		source: "(1145:12) {:else}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1115:54) 
+    // (1135:54) 
     function create_if_block$_3(ctx) {
     	let h3$;
     	let t1$;
@@ -15516,17 +15516,17 @@ var app = (function () {
     			t8$ = space();
     			textarea$ = element("textarea");
     			attr_dev(h3$, "class", "svelte-uzk6d");
-    			add_location(h3$, file$, 1115, 16, 42779);
+    			add_location(h3$, file$, 1135, 16, 43234);
     			attr_dev(label0$, "class", "svelte-uzk6d");
-    			add_location(label0$, file$, 1116, 16, 42811);
+    			add_location(label0$, file$, 1136, 16, 43266);
     			attr_dev(label1$, "class", "svelte-uzk6d");
-    			add_location(label1$, file$, 1117, 16, 42869);
+    			add_location(label1$, file$, 1137, 16, 43324);
     			attr_dev(button$, "class", "copy-button svelte-uzk6d");
-    			add_location(button$, file$, 1118, 16, 42908);
+    			add_location(button$, file$, 1138, 16, 43363);
     			attr_dev(textarea$, "rows", "20");
     			textarea$.readOnly = true;
     			attr_dev(textarea$, "class", "svelte-uzk6d");
-    			add_location(textarea$, file$, 1119, 16, 42988);
+    			add_location(textarea$, file$, 1139, 16, 43443);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -15577,14 +15577,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_3.name,
     		type: "if",
-    		source: "(1115:54) ",
+    		source: "(1135:54) ",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1065:12) {#if inspectorNode.role === "input"}
+    // (1085:12) {#if inspectorNode.role === "input"}
     function create_if_block$_2(ctx) {
     	let h3$;
     	let t1$;
@@ -15643,20 +15643,20 @@ var app = (function () {
     			button$ = element("button");
     			t11$ = text("Add Variable");
     			attr_dev(h3$, "class", "svelte-uzk6d");
-    			add_location(h3$, file$, 1065, 16, 40606);
+    			add_location(h3$, file$, 1085, 16, 41061);
     			attr_dev(label0$, "class", "svelte-uzk6d");
-    			add_location(label0$, file$, 1066, 16, 40637);
+    			add_location(label0$, file$, 1086, 16, 41092);
     			attr_dev(label1$, "class", "svelte-uzk6d");
-    			add_location(label1$, file$, 1067, 16, 40695);
+    			add_location(label1$, file$, 1087, 16, 41150);
     			attr_dev(textarea$, "rows", "5");
     			textarea$.disabled = /*isRunning*/ ctx[3];
     			attr_dev(textarea$, "class", "svelte-uzk6d");
-    			add_location(textarea$, file$, 1068, 16, 40733);
+    			add_location(textarea$, file$, 1088, 16, 41188);
     			attr_dev(label2$, "class", "svelte-uzk6d");
-    			add_location(label2$, file$, 1073, 16, 40915);
+    			add_location(label2$, file$, 1093, 16, 41370);
     			attr_dev(button$, "class", "copy-button svelte-uzk6d");
     			button$.disabled = /*isRunning*/ ctx[3];
-    			add_location(button$, file$, 1103, 16, 42284);
+    			add_location(button$, file$, 1123, 16, 42739);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, h3$, anchor);
@@ -15741,14 +15741,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$_2.name,
     		type: "if",
-    		source: "(1065:12) {#if inspectorNode.role === \\\"input\\\"}",
+    		source: "(1085:12) {#if inspectorNode.role === \\\"input\\\"}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1075:16) {#each inspectorNode.envVars as env, idx (idx)}
+    // (1095:16) {#each inspectorNode.envVars as env, idx (idx)}
     function create_each_block$_1(key$_1, ctx) {
     	let div1$;
     	let div0$;
@@ -15788,19 +15788,19 @@ var app = (function () {
     			attr_dev(input$, "placeholder", "Key");
     			input$.disabled = /*isRunning*/ ctx[3];
     			attr_dev(input$, "class", "svelte-uzk6d");
-    			add_location(input$, file$, 1077, 28, 41137);
+    			add_location(input$, file$, 1097, 28, 41592);
     			attr_dev(button$, "class", "copy-button svelte-uzk6d");
     			button$.disabled = /*isRunning*/ ctx[3];
-    			add_location(button$, file$, 1083, 28, 41429);
+    			add_location(button$, file$, 1103, 28, 41884);
     			attr_dev(div0$, "class", "env-key-row svelte-uzk6d");
-    			add_location(div0$, file$, 1076, 24, 41083);
+    			add_location(div0$, file$, 1096, 24, 41538);
     			attr_dev(textarea$, "placeholder", "Value");
     			attr_dev(textarea$, "rows", "3");
     			textarea$.disabled = /*isRunning*/ ctx[3];
     			attr_dev(textarea$, "class", "svelte-uzk6d");
-    			add_location(textarea$, file$, 1094, 24, 41919);
+    			add_location(textarea$, file$, 1114, 24, 42374);
     			attr_dev(div1$, "class", "env-row svelte-uzk6d");
-    			add_location(div1$, file$, 1075, 20, 41037);
+    			add_location(div1$, file$, 1095, 20, 41492);
     			this.first = div1$;
     		},
     		m: function mount(target, anchor) {
@@ -15861,14 +15861,14 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$_1.name,
     		type: "each",
-    		source: "(1075:16) {#each inspectorNode.envVars as env, idx (idx)}",
+    		source: "(1095:16) {#each inspectorNode.envVars as env, idx (idx)}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1157:12) {#if label.name}
+    // (1177:12) {#if label.name}
     function create_if_block$(ctx) {
     	let div$;
     	let t0$_value$ = /*label*/ ctx[47].name + "";
@@ -15883,7 +15883,7 @@ var app = (function () {
     			attr_dev(div$, "class", "node-label svelte-uzk6d");
     			set_style(div$, "left", /*label*/ ctx[47].x + "px");
     			set_style(div$, "top", /*label*/ ctx[47].y + "px");
-    			add_location(div$, file$, 1157, 16, 44369);
+    			add_location(div$, file$, 1177, 16, 44824);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div$, anchor);
@@ -15910,14 +15910,14 @@ var app = (function () {
     		block: block$,
     		id: create_if_block$.name,
     		type: "if",
-    		source: "(1157:12) {#if label.name}",
+    		source: "(1177:12) {#if label.name}",
     		ctx
     	});
 
     	return block$;
     }
 
-    // (1156:8) {#each labels as label, i (i)}
+    // (1176:8) {#each labels as label, i (i)}
     function create_each_block$(key$_1, ctx) {
     	let first$;
     	let if_block$_anchor$;
@@ -15964,7 +15964,7 @@ var app = (function () {
     		block: block$,
     		id: create_each_block$.name,
     		type: "each",
-    		source: "(1156:8) {#each labels as label, i (i)}",
+    		source: "(1176:8) {#each labels as label, i (i)}",
     		ctx
     	});
 
@@ -16063,50 +16063,50 @@ var app = (function () {
     			button4$.textContent = "Export";
     			attr_dev(h1$, "class", "scene-title svelte-uzk6d");
     			attr_dev(h1$, "contenteditable", "true");
-    			add_location(h1$, file$, 1053, 4, 40237);
+    			add_location(h1$, file$, 1073, 4, 40692);
     			attr_dev(div0$, "class", "info-panel svelte-uzk6d");
     			set_style(div0$, "width", /*panelWidth*/ ctx[6] + "px");
-    			add_location(div0$, file$, 1062, 4, 40457);
+    			add_location(div0$, file$, 1082, 4, 40912);
     			attr_dev(div1$, "class", "resizer svelte-uzk6d");
-    			add_location(div1$, file$, 1151, 4, 44134);
+    			add_location(div1$, file$, 1171, 4, 44589);
     			attr_dev(canvas$, "class", "svelte-uzk6d");
-    			add_location(canvas$, file$, 1154, 8, 44248);
+    			add_location(canvas$, file$, 1174, 8, 44703);
     			attr_dev(div2$, "class", "canvas-container svelte-uzk6d");
-    			add_location(div2$, file$, 1153, 4, 44209);
+    			add_location(div2$, file$, 1173, 4, 44664);
     			attr_dev(path0$, "d", "M8 5v14l11-7z");
-    			add_location(path0$, file$, 1176, 16, 44908);
+    			add_location(path0$, file$, 1196, 16, 45363);
     			attr_dev(svg0$, "width", "16");
     			attr_dev(svg0$, "height", "16");
     			attr_dev(svg0$, "viewBox", "0 0 24 24");
     			attr_dev(svg0$, "fill", "currentColor");
     			attr_dev(svg0$, "aria-hidden", "true");
-    			add_location(svg0$, file$, 1169, 12, 44711);
+    			add_location(svg0$, file$, 1189, 12, 45166);
     			button0$.disabled = button0$_disabled_value$ = /*isRunning*/ ctx[3] || !/*hasPath*/ ctx[7];
     			attr_dev(button0$, "class", "svelte-uzk6d");
-    			add_location(button0$, file$, 1168, 8, 44633);
+    			add_location(button0$, file$, 1188, 8, 45088);
     			attr_dev(path1$, "d", "M6 6h12v12H6z");
-    			add_location(path1$, file$, 1188, 16, 45261);
+    			add_location(path1$, file$, 1208, 16, 45716);
     			attr_dev(svg1$, "width", "16");
     			attr_dev(svg1$, "height", "16");
     			attr_dev(svg1$, "viewBox", "0 0 24 24");
     			attr_dev(svg1$, "fill", "currentColor");
     			attr_dev(svg1$, "aria-hidden", "true");
-    			add_location(svg1$, file$, 1181, 12, 45064);
+    			add_location(svg1$, file$, 1201, 12, 45519);
     			button1$.disabled = button1$_disabled_value$ = !/*isRunning*/ ctx[3];
     			attr_dev(button1$, "class", "svelte-uzk6d");
-    			add_location(button1$, file$, 1180, 8, 44997);
+    			add_location(button1$, file$, 1200, 8, 45452);
     			attr_dev(div3$, "class", "vertical-separator svelte-uzk6d");
-    			add_location(div3$, file$, 1192, 8, 45350);
+    			add_location(div3$, file$, 1212, 8, 45805);
     			attr_dev(button2$, "class", "svelte-uzk6d");
-    			add_location(button2$, file$, 1193, 8, 45397);
+    			add_location(button2$, file$, 1213, 8, 45852);
     			attr_dev(button3$, "class", "svelte-uzk6d");
-    			add_location(button3$, file$, 1194, 8, 45446);
+    			add_location(button3$, file$, 1214, 8, 45901);
     			attr_dev(button4$, "class", "svelte-uzk6d");
-    			add_location(button4$, file$, 1195, 8, 45501);
+    			add_location(button4$, file$, 1215, 8, 45956);
     			attr_dev(div4$, "class", "controls svelte-uzk6d");
-    			add_location(div4$, file$, 1167, 4, 44602);
+    			add_location(div4$, file$, 1187, 4, 45057);
     			attr_dev(div5$, "class", "app-wrap svelte-uzk6d");
-    			add_location(div5$, file$, 1052, 0, 40210);
+    			add_location(div5$, file$, 1072, 0, 40665);
     		},
     		l: function claim(nodes) {
     			throw new Error$("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -16284,7 +16284,7 @@ var app = (function () {
     			try {
     				const parsed = JSON.parse(saved);
 
-    				if (parsed && typeof parsed === 'object' && parsed.hasOwnProperty('scene')) {
+    				if (parsed && typeof parsed === "object" && parsed.hasOwnProperty("scene")) {
     					sceneName = parsed.name || "Untitled Flow";
     					const sceneData = parsed.scene || [];
     					const circles = sceneData.filter(s => s.type === "circle");
@@ -17040,7 +17040,7 @@ var app = (function () {
     		const nodes = scene.filter(s => s.type === "circle");
     		const edges = scene.filter(s => s.type === "edge");
     		const inputNode = nodes.find(n => n.role === "input");
-    		const outputNode = nodes.find(n => n.role === "output");
+    		let outputNode = nodes.find(n => n.role === "output");
 
     		if (!inputNode || !outputNode) {
     			alert("Input and Output nodes must be defined.");
@@ -17164,6 +17164,14 @@ var app = (function () {
     		// Clear highlights
     		scene.forEach(s => s.highlight = false);
 
+    		// Select the output node to show the final result
+    		outputNode = scene.find(s => s.role === "output");
+
+    		if (outputNode) {
+    			scene.forEach(s => s.selected = false);
+    			outputNode.selected = true;
+    		}
+
     		$$invalidate(1, scene = [...scene]);
     	}
 
@@ -17225,7 +17233,7 @@ var app = (function () {
     		const s = await parseFromYaml(sceneYaml);
 
     		// Validate scene structure
-    		if (typeof s !== 'object' || s === null || !s.scene || !Array.isArray(s.scene)) {
+    		if (typeof s !== "object" || s === null || !s.scene || !Array.isArray(s.scene)) {
     			alert("Invalid scene format. Please check the YAML file.");
     			return;
     		}

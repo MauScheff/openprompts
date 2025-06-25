@@ -44,11 +44,17 @@
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                if (parsed && typeof parsed === 'object' && parsed.hasOwnProperty('scene')) {
+                if (
+                    parsed &&
+                    typeof parsed === "object" &&
+                    parsed.hasOwnProperty("scene")
+                ) {
                     sceneName = parsed.name || "Untitled Flow";
                     const sceneData = parsed.scene || [];
-                    
-                    const circles = sceneData.filter((s) => s.type === "circle");
+
+                    const circles = sceneData.filter(
+                        (s) => s.type === "circle",
+                    );
                     circles.forEach((s) => {
                         if (s.role === "input" && s.envVars == null) {
                             s.envVars = [];
@@ -59,7 +65,8 @@
                     const newScene = [...circles];
                     edgesRaw.forEach((e) => {
                         const fromNode = newScene.find(
-                            (s) => s.type === "circle" && s.name === e.from.name,
+                            (s) =>
+                                s.type === "circle" && s.name === e.from.name,
                         );
                         const toNode = newScene.find(
                             (s) => s.type === "circle" && s.name === e.to.name,
@@ -137,7 +144,9 @@
     }
 
     function addCircle(x, y) {
-        const prevSelected = scene.find((s) => s.type === "circle" && s.selected);
+        const prevSelected = scene.find(
+            (s) => s.type === "circle" && s.selected,
+        );
         const newNode = {
             type: "circle",
             role: "default",
@@ -654,8 +663,9 @@
         });
     });
 
-    let selectedShape =
-        scene.find((s) => s.type === "circle" && (s.highlight || s.selected));
+    let selectedShape = scene.find(
+        (s) => s.type === "circle" && (s.highlight || s.selected),
+    );
     // Update screen-space labels below each node whenever relevant state changes
     $: if (canvas) {
         const w = canvas.clientWidth;
@@ -676,10 +686,9 @@
                 return { x: xPx, y: yPx, name: s.name };
             });
         // Active shape: prefer highlighted (during play), otherwise selected by user
-        selectedShape =
-            scene.find(
-                (s) => s.type === "circle" && (s.highlight || s.selected),
-            );
+        selectedShape = scene.find(
+            (s) => s.type === "circle" && (s.highlight || s.selected),
+        );
     }
 
     let isRunning = false;
@@ -776,7 +785,7 @@
         const nodes = scene.filter((s) => s.type === "circle");
         const edges = scene.filter((s) => s.type === "edge");
         const inputNode = nodes.find((n) => n.role === "input");
-        const outputNode = nodes.find((n) => n.role === "output");
+        let outputNode = nodes.find((n) => n.role === "output");
 
         if (!inputNode || !outputNode) {
             alert("Input and Output nodes must be defined.");
@@ -898,7 +907,7 @@
         // Clear highlights
         scene.forEach((s) => (s.highlight = false));
         // Select the output node to show the final result
-        const outputNode = scene.find((s) => s.role === "output");
+        outputNode = scene.find((s) => s.role === "output");
         if (outputNode) {
             scene.forEach((s) => (s.selected = false));
             outputNode.selected = true;
@@ -965,7 +974,12 @@
         const sceneYaml = await readTextFile(file);
         const s = await parseFromYaml(sceneYaml);
         // Validate scene structure
-        if (typeof s !== 'object' || s === null || !s.scene || !Array.isArray(s.scene)) {
+        if (
+            typeof s !== "object" ||
+            s === null ||
+            !s.scene ||
+            !Array.isArray(s.scene)
+        ) {
             alert("Invalid scene format. Please check the YAML file.");
             return;
         }

@@ -21,72 +21,65 @@
     const selectedColor = [0.91, 0.12, 0.39, 1];
     // Highlight during pipeline execution: yellow (#FFEB3B)
     const highlightColor = [1, 0.92, 0.23, 1];
-    const DEFAULT_SCENE = [
-        {
-            type: "circle",
-            role: "input",
-            center: [-0.9, 0],
-            radius: 0.1,
-            color: ioColor,
-            selected: false,
-            inputText: "",
-            envVars: [],
-            name: "Input",
-            highlight: false,
-        },
-        {
-            type: "circle",
-            role: "output",
-            center: [0.9, 0],
-            radius: 0.1,
-            color: ioColor,
-            selected: false,
-            outputText: "",
-            name: "Output",
-            highlight: false,
-        },
-    ];
     let scene;
+    let sceneName;
+
     if (typeof window !== "undefined") {
         const saved = window.localStorage.getItem("scene");
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                const circles = parsed.filter((s) => s.type === "circle");
-                // Ensure input node has envVars property
-                circles.forEach((s) => {
-                    if (s.role === "input" && s.envVars == null) {
-                        s.envVars = [];
-                    }
-                });
-                const edgesRaw = parsed.filter((s) => s.type === "edge");
-                scene = [...circles];
-                edgesRaw.forEach((e) => {
-                    const fromNode = scene.find(
-                        (s) => s.type === "circle" && s.name === e.from.name,
-                    );
-                    const toNode = scene.find(
-                        (s) => s.type === "circle" && s.name === e.to.name,
-                    );
-                    if (fromNode && toNode) {
-                        scene.push({
-                            type: "edge",
-                            from: fromNode,
-                            to: toNode,
-                            color: e.color,
-                            selected: e.selected,
-                            highlight: e.highlight || false,
-                        });
-                    }
-                });
+                if (parsed && typeof parsed === 'object' && parsed.hasOwnProperty('scene')) {
+                    sceneName = parsed.name || "Untitled Scene";
+                    const sceneData = parsed.scene || [];
+                    
+                    const circles = sceneData.filter((s) => s.type === "circle");
+                    circles.forEach((s) => {
+                        if (s.role === "input" && s.envVars == null) {
+                            s.envVars = [];
+                        }
+                    });
+
+                    const edgesRaw = sceneData.filter((s) => s.type === "edge");
+                    const newScene = [...circles];
+                    edgesRaw.forEach((e) => {
+                        const fromNode = newScene.find(
+                            (s) => s.type === "circle" && s.name === e.from.name,
+                        );
+                        const toNode = newScene.find(
+                            (s) => s.type === "circle" && s.name === e.to.name,
+                        );
+                        if (fromNode && toNode) {
+                            newScene.push({
+                                type: "edge",
+                                from: fromNode,
+                                to: toNode,
+                                color: e.color,
+                                selected: e.selected,
+                                highlight: e.highlight || false,
+                            });
+                        }
+                    });
+                    scene = newScene;
+                } else {
+                    // Old format or corrupted, initialize a new scene
+                    scene = [];
+                    sceneName = "Untitled Scene";
+                }
             } catch (err) {
-                scene = DEFAULT_SCENE;
+                console.error("Failed to load scene from localStorage:", err);
+                scene = [];
+                sceneName = "Untitled Scene";
             }
         } else {
-            scene = DEFAULT_SCENE;
+            // No saved data, initialize a new scene
+            scene = [];
+            sceneName = "Untitled Scene";
         }
     } else {
-        scene = DEFAULT_SCENE;
+        // SSR
+        scene = [];
+        sceneName = "Untitled Scene";
     }
     // View transform for positioning and zoom
     let viewScale = 1;
@@ -128,63 +121,33 @@
         }
     }
 
-    function addCircle() {
-        // Determine previous node: last prompt or input if first
-        const prompts = scene.filter(
-            (s) => s.type === "circle" && s.role === "default",
-        );
-        const prev =
-            prompts.length > 0
-                ? prompts[prompts.length - 1]
-                : scene.find((s) => s.role === "input");
-        // Assign a sequential name
-        const index = prompts.length + 1;
+    function addCircle(x, y) {
+        const prevSelected = scene.find((s) => s.type === "circle" && s.selected);
         const newNode = {
             type: "circle",
             role: "default",
-            name: `Prompt ${index}`,
-            // Default command echoes input
+            name: `Prompt ${scene.filter((s) => s.type === "circle").length - 1}`,
             command: "echo {input}",
-            center: [Math.random() * 1.8 - 0.9, Math.random() * 1.8 - 0.9],
+            center: [x, y],
             radius: 0.1,
             color: defaultNodeColor,
-            selected: false,
+            selected: true,
             highlight: false,
             outputText: "",
         };
+        if (prevSelected) {
+            prevSelected.selected = false;
+        }
         scene.push(newNode);
-        // Automatically connect from previous node
-        if (prev) {
+        if (prevSelected) {
             scene.push({
                 type: "edge",
-                from: prev,
+                from: prevSelected,
                 to: newNode,
                 color: [1, 1, 1, 1],
                 selected: false,
             });
         }
-        // Remove any existing edge to output, then connect new prompt to output
-        const outputNode = scene.find((s) => s.role === "output");
-        for (let i = scene.length - 1; i >= 0; i--) {
-            const s = scene[i];
-            if (s.type === "edge" && s.to === outputNode) {
-                scene.splice(i, 1);
-            }
-        }
-        if (outputNode) {
-            scene.push({
-                type: "edge",
-                from: newNode,
-                to: outputNode,
-                color: [1, 1, 1, 1],
-                selected: false,
-            });
-        }
-        // Select the new prompt node and clear previous selections
-        scene.forEach((s) => {
-            s.selected = s === newNode;
-        });
-        // Trigger reactivity for scene change
         scene = [...scene];
     }
 
@@ -508,6 +471,16 @@
                 isPanning = false;
             }
         });
+        canvas.addEventListener("dblclick", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            // Pointer in NDC
+            const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            const ndcY = 1 - ((e.clientY - rect.top) / rect.height) * 2;
+            // Convert to world coordinates
+            const worldX = (ndcX - viewOffset[0]) / viewScale;
+            const worldY = (ndcY - viewOffset[1]) / viewScale;
+            addCircle(worldX, worldY);
+        });
         // Delete selected circles or edges on Backspace when not editing text
         window.addEventListener("keydown", (e) => {
             if (e.key !== "Backspace") {
@@ -667,9 +640,7 @@
     });
 
     let selectedShape =
-        scene.find((s) => s.type === "circle" && (s.highlight || s.selected)) ||
-        // On first load, show output node info
-        scene.find((s) => s.type === "circle" && s.role === "output");
+        scene.find((s) => s.type === "circle" && (s.highlight || s.selected));
     // Update screen-space labels below each node whenever relevant state changes
     $: if (canvas) {
         const w = canvas.clientWidth;
@@ -689,11 +660,11 @@
                 const yPx = ((1 - yN) / 2) * h + pixelRadius + margin;
                 return { x: xPx, y: yPx, name: s.name };
             });
-        // Active shape: prefer highlighted (during play), otherwise selected by user; fallback to output node
+        // Active shape: prefer highlighted (during play), otherwise selected by user
         selectedShape =
             scene.find(
                 (s) => s.type === "circle" && (s.highlight || s.selected),
-            ) || scene.find((s) => s.type === "circle" && s.role === "output");
+            );
     }
 
     let isRunning = false;
@@ -915,6 +886,35 @@
         isRunning = false;
     }
 
+    function newScene() {
+        scene = [
+            {
+                type: "circle",
+                role: "input",
+                center: [-0.9, 0],
+                radius: 0.1,
+                color: ioColor,
+                selected: false,
+                inputText: "",
+                envVars: [],
+                name: "Input",
+                highlight: false,
+            },
+            {
+                type: "circle",
+                role: "output",
+                center: [0.9, 0],
+                radius: 0.1,
+                color: ioColor,
+                selected: false,
+                outputText: "",
+                name: "Output",
+                highlight: false,
+            },
+        ];
+        sceneName = "Untitled Scene";
+    }
+
     async function copyOutput() {
         if (!selectedShape || !selectedShape.outputText) {
             return;
@@ -940,19 +940,14 @@
         const sceneYaml = await readTextFile(file);
         const s = await parseFromYaml(sceneYaml);
         // Validate scene structure
-        if (!Array.isArray(s) || s.length === 0) {
+        if (typeof s !== 'object' || s === null || !s.scene || !Array.isArray(s.scene)) {
             alert("Invalid scene format. Please check the YAML file.");
             return;
         }
-        // Ensure scene is an array of objects with required properties
-        for (const item of s) {
-            if (typeof item !== "object" || item === null) {
-                alert("Invalid scene format. Please check the YAML file.");
-                return;
-            }
-        }
+        sceneName = s.name || "Untitled Scene";
+        const sceneData = s.scene;
 
-        const circles = s.filter((item) => item.type === "circle");
+        const circles = sceneData.filter((item) => item.type === "circle");
         // Ensure input node has envVars property
         circles.forEach((item) => {
             if (item.role === "input" && item.envVars == null) {
@@ -960,7 +955,7 @@
             }
         });
 
-        const edgesRaw = s.filter((item) => item.type === "edge");
+        const edgesRaw = sceneData.filter((item) => item.type === "edge");
         const newScene = [...circles];
         edgesRaw.forEach((e) => {
             const fromNode = newScene.find(
@@ -1002,7 +997,7 @@
             console.log("Save dialog was cancelled");
         }
 
-        const yaml = parseToYaml(scene);
+        const yaml = parseToYaml({ name: sceneName, scene: scene });
         const file = await create(path, {
             overwrite: true,
         });
@@ -1011,11 +1006,21 @@
     }
 
     $: if (typeof window !== "undefined") {
-        window.localStorage.setItem("scene", JSON.stringify(scene));
+        window.localStorage.setItem(
+            "scene",
+            JSON.stringify({ name: sceneName, scene: scene }),
+        );
     }
 </script>
 
 <div class="app-wrap">
+    <h1
+        class="scene-title"
+        contenteditable="true"
+        on:blur={(e) => (sceneName = e.target.innerText)}
+    >
+        {sceneName}
+    </h1>
     <div class="info-panel" style="width: {panelWidth}px;">
         {#if selectedShape}
             {#if selectedShape.role === "input"}
@@ -1109,18 +1114,6 @@
     </div>
 
     <div class="controls">
-        <button on:click={addCircle}>
-            <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-            >
-                <path d="M19 13H13v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-            </svg>
-            Add Step
-        </button>
         <button on:click={playPipeline} disabled={isRunning || !hasPath}>
             <svg
                 width="16"
@@ -1146,6 +1139,7 @@
             Stop
         </button>
         <div class="vertical-separator"></div>
+        <button on:click={newScene}>New</button>
         <button on:click={importScene}>Import</button>
         <button on:click={exportScene}>Export</button>
     </div>
@@ -1376,5 +1370,19 @@
         margin-top: 4px;
         margin-bottom: 0;
         resize: vertical;
+    }
+    .scene-title {
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        z-index: 2;
+        font-size: 1.5em;
+        font-weight: 600;
+        background: none;
+        border: none;
+        outline: none;
+        text-align: center;
     }
 </style>

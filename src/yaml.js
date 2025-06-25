@@ -11,9 +11,9 @@ export function parseFromYaml(yamlString) {
   }
 }
 
-export function parseToYaml(javascriptObject) {
+export function parseToYaml(data) {
   try {
-    const doc = yaml.dump(javascriptObject);
+    const doc = yaml.dump(data);
     return doc;
   } catch (e) {
     console.error(e);

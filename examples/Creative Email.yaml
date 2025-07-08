@@ -1,0 +1,763 @@
+name: Creative Email Flow
+description: Writes a random email.
+scene:
+  - &ref_3
+    type: circle
+    role: input
+    center:
+      - -0.9
+      - -0.0012202562538132788
+    radius: 0.1
+    color:
+      - 1
+      - 0.718
+      - 0.302
+      - 1
+    selected: false
+    inputText: ''
+    envVars: []
+    name: Input
+    highlight: false
+    id: 6f280ff8-8b7f-468e-9d4d-43cab1691baf
+  - &ref_8
+    type: circle
+    role: output
+    center:
+      - 1.4715355738707556
+      - 0.06591993913669414
+    radius: 0.1
+    color:
+      - 1
+      - 0.718
+      - 0.302
+      - 1
+    selected: false
+    outputText: >
+      Subject: Summary: "The Wicked Bloom of Copper Canyon"
+
+
+      Hi,
+
+
+      Here’s a quick summary of the story "The Wicked Bloom of Copper Canyon."
+      In the magical town of Copper Canyon, colorful skies and clever animals
+      like Bella the fox and Max the raven add to the charm. A group of unusual
+      pets hears about a mysterious, enchanted bloom rumored to cause
+      enchantment. Ignoring warnings, they find it, and the bloom’s magic
+      changes the town and themselves forever. The pets’ adventures make Copper
+      Canyon brighter, more mischievous, and full of secrets from then on.
+
+
+      Let me know if you’d like a follow-up or a story about a specific pet or
+      color!
+    name: Output
+    highlight: false
+    id: fb0b53bc-ee05-40f7-8a20-3a03e80df557
+  - &ref_4
+    type: circle
+    role: default
+    name: 10 Colors
+    command: |-
+      curl -s  https://api.openai.com/v1/responses \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+        "model": "gpt-4.1",
+        "input": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "input_text",
+                "text": "Come up with 10 color names"
+              }
+            ]
+          }
+        ],
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "reasoning": {},
+        "tools": [],
+        "temperature": 1,
+        "max_output_tokens": 2048,
+        "top_p": 1,
+        "store": true
+      }'
+    center:
+      - -0.2630135255530762
+      - 0.36294341551533077
+    radius: 0.1
+    color:
+      - 0.302
+      - 0.816
+      - 0.882
+      - 1
+    selected: false
+    highlight: false
+    outputText: |-
+      {
+        "id": "resp_685d2116ddec8192b79536904963d6de02e79397351d8af9",
+        "object": "response",
+        "created_at": 1750933782,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 2048,
+        "max_tool_calls": null,
+        "model": "gpt-4.1-2025-04-14",
+        "output": [
+          {
+            "id": "msg_685d21175a54819286ab472f3cdc307502e79397351d8af9",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "text": "Sure! Here are 10 creative color names:\n\n1. **Sunset Coral**\n2. **Midnight Indigo**\n3. **Mossy Meadow**\n4. **Golden Amber**\n5. **Frosted Lavender**\n6. **Cerulean Mist**\n7. **Cherry Blossom Pink**\n8. **Copper Canyon**\n9. **Peach Sorbet**\n10. **Stormy Slate**"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1.0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": 1.0,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 14,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 83,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 97
+        },
+        "user": null,
+        "metadata": {}
+      }
+    id: 55657aa5-c372-4a64-83ce-065782cc7dfc
+  - &ref_1
+    type: circle
+    role: default
+    name: Filter
+    command: jq -r '.output[0].content[0].text'
+    center:
+      - 0.0586069087575809
+      - 0.5282695754844737
+    radius: 0.1
+    color:
+      - 0.302
+      - 0.816
+      - 0.882
+      - 1
+    selected: false
+    highlight: false
+    outputText: |
+      Sure! Here are 10 creative color names:
+
+      1. **Sunset Coral**
+      2. **Midnight Indigo**
+      3. **Mossy Meadow**
+      4. **Golden Amber**
+      5. **Frosted Lavender**
+      6. **Cerulean Mist**
+      7. **Cherry Blossom Pink**
+      8. **Copper Canyon**
+      9. **Peach Sorbet**
+      10. **Stormy Slate**
+    id: 9a7c0545-4c4c-4dbe-ae8d-77c515fbc611
+  - &ref_9
+    type: circle
+    role: default
+    name: 10 Pet Names
+    command: |-
+      curl -s https://api.openai.com/v1/responses \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+        "model": "gpt-4.1",
+        "input": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "input_text",
+                "text": "Come up with 10 pet names"
+              }
+            ]
+          },
+          {
+            "id": "msg_685c501462bc81a1be3db54d95e37b5306bc6f6a60c67917",
+            "role": "assistant",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "Of course! Here are 10 cute pet names:\n\n1. **Milo**\n2. **Luna**\n3. **Bailey**\n4. **Willow**\n5. **Ollie**\n6. **Pebbles**\n7. **Teddy**\n8. **Maple**\n9. **Gizmo**\n10. **Nala**\n\nLet me know if you want names for a specific animal or style!"
+              }
+            ]
+          }
+        ],
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "reasoning": {},
+        "tools": [],
+        "temperature": 1,
+        "max_output_tokens": 2048,
+        "top_p": 1,
+        "store": true
+      }'
+    center:
+      - -0.2620320855614971
+      - -0.12629652226967653
+    radius: 0.1
+    color: &ref_0
+      - 0.302
+      - 0.816
+      - 0.882
+      - 1
+    selected: false
+    highlight: false
+    outputText: |-
+      {
+        "id": "resp_685d211a279c81a1aca61d2ad0cc13d206bc6f6a60c67917",
+        "object": "response",
+        "created_at": 1750933786,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 2048,
+        "max_tool_calls": null,
+        "model": "gpt-4.1-2025-04-14",
+        "output": [
+          {
+            "id": "msg_685d211a63e881a19353448f8fb5e92d06bc6f6a60c67917",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "text": "Sure! Here are 10 pet names:\n\n1. Bella  \n2. Max  \n3. Coco  \n4. Daisy  \n5. Leo  \n6. Peanut  \n7. Shadow  \n8. Ruby  \n9. Finn  \n10. Hazel  \n\nLet me know if you want names for a specific type of pet!"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1.0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": 1.0,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 104,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 64,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 168
+        },
+        "user": null,
+        "metadata": {}
+      }
+    id: 875b4c2f-d448-40ed-983a-07310d556b54
+  - &ref_10
+    type: circle
+    role: default
+    name: Filter
+    command: jq -r '.output[0].content[0].text'
+    center:
+      - 0.15260693218720633
+      - -0.07413313280564825
+    radius: 0.1
+    color: *ref_0
+    selected: false
+    highlight: false
+    outputText: |
+      Sure! Here are 10 pet names:
+
+      1. Bella  
+      2. Max  
+      3. Coco  
+      4. Daisy  
+      5. Leo  
+      6. Peanut  
+      7. Shadow  
+      8. Ruby  
+      9. Finn  
+      10. Hazel  
+
+      Let me know if you want names for a specific type of pet!
+    id: 7fe16763-54ae-4888-b8b3-a77111723624
+  - &ref_2
+    type: circle
+    role: default
+    name: Story
+    command: >-
+      myvar=$(cat) && \
+
+      escaped_myvar=$(printf '%s' "$myvar" | jq -Rs . | sed 's/^"//; s/"$//') &&
+      \
+
+      curl -s https://api.openai.com/v1/responses \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+        "model": "gpt-4.1",
+        "input": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "input_text",
+                "text": "<task>\nBased on the color names and pet names, come up with a wicked story.\n</task>\n\n<input>\n'"$escaped_myvar"'\n</input>\n"
+              }
+            ]
+          }
+        ],
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "reasoning": {},
+        "tools": [],
+        "temperature": 1,
+        "max_output_tokens": 2048,
+        "top_p": 1,
+        "store": true
+      }'
+    center:
+      - 0.4933494356345159
+      - 0.06952695251250052
+    radius: 0.1
+    color: *ref_0
+    selected: false
+    highlight: false
+    outputText: |-
+      {
+        "id": "resp_685d211cc2bc8191827ca72e8d9959aa0a94a8b296f70953",
+        "object": "response",
+        "created_at": 1750933788,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 2048,
+        "max_tool_calls": null,
+        "model": "gpt-4.1-2025-04-14",
+        "output": [
+          {
+            "id": "msg_685d211d0df08191a41cd76d95be718d0a94a8b296f70953",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "text": "Absolutely, buckle up for a wicked tale woven with those color names and pet names!\n\n---\n\n### The Wicked Bloom of Copper Canyon\n\nOnce upon a time in the surreal town of Copper Canyon, life shimmered in hues unseen elsewhere. The skies at dusk flushed with **Sunset Coral**, while midnight brought a cloak of **Midnight Indigo** thick enough to hide even the most daring secrets.\n\nBella, a cunning fox with a tail tipped like **Frosted Lavender**, ruled the meadows. With Mossy Meadow as her backdrop, she plotted mischief. Her best friend, Max\u2014a raven as dark as **Stormy Slate**\u2014whispered secrets overhead, always watching.\n\nOne sunny day, a band of strange pets assembled. There was Coco, a squirrel with **Peach Sorbet** streaks, Daisy\u2014the golden retriever whose fur shimmered with **Golden Amber** light\u2014and Leo, an unusually wise owl draped in **Cerulean Mist** feathers. Peanut, a hyperactive mouse, loved to hide among the **Cherry Blossom Pink** petals while Shadow, the stealthy black cat, faded into the night like a shadow swallowed by indigo.\n\nBut even the happiest hills have darkness lurking. Deep within Copper Canyon, a forbidden bloom grew. Legend had it that those who sniffed its **Stormy Slate** petals would lose themselves to wild enchantment.\n\nOne fateful evening, Ruby\u2014a sly snake with gem-like scales\u2014dared Finn, her rabbit neighbor, to sneak down and find the bloom. Hazel, a gentle deer known for her earthy wisdom, warned: \"Copper Canyon keeps its secrets well. You may not come back the same.\"\n\nUnheeding, the pets trekked through the colorful fog. The bloom\u2019s fragrance lured them, painting strange colors in their minds: sunsets that never ended, indigos that never lightened. Bella\u2019s tail fizzed with static, Max cawed warnings, but it was too late\u2014the bloom opened, pulsing with all their secrets.\n\nFrom that night on, Copper Canyon was never quite the same. The pets, having tasted the bloom\u2019s magic, found mischief easier, life brighter, and secrets thicker. And above, the sky blazed hues none could name\u2014except, perhaps, those with a wicked streak and a friend called Bella.\n\n---\n\n**The End.**\n\nWould you like a follow-up? Or maybe stories that star a particular pet and color? Let me know!"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1.0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": 1.0,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 261,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 497,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 758
+        },
+        "user": null,
+        "metadata": {}
+      }
+    id: d2be22ce-9711-4356-b1c6-82c17270eedd
+  - &ref_5
+    type: circle
+    role: default
+    name: Filter
+    command: jq -r '.output[0].content[0].text'
+    center:
+      - 0.7508887900867527
+      - 0.06829284854066392
+    radius: 0.1
+    color: *ref_0
+    selected: false
+    highlight: false
+    outputText: >
+      Absolutely, buckle up for a wicked tale woven with those color names and
+      pet names!
+
+
+      ---
+
+
+      ### The Wicked Bloom of Copper Canyon
+
+
+      Once upon a time in the surreal town of Copper Canyon, life shimmered in
+      hues unseen elsewhere. The skies at dusk flushed with **Sunset Coral**,
+      while midnight brought a cloak of **Midnight Indigo** thick enough to hide
+      even the most daring secrets.
+
+
+      Bella, a cunning fox with a tail tipped like **Frosted Lavender**, ruled
+      the meadows. With Mossy Meadow as her backdrop, she plotted mischief. Her
+      best friend, Max—a raven as dark as **Stormy Slate**—whispered secrets
+      overhead, always watching.
+
+
+      One sunny day, a band of strange pets assembled. There was Coco, a
+      squirrel with **Peach Sorbet** streaks, Daisy—the golden retriever whose
+      fur shimmered with **Golden Amber** light—and Leo, an unusually wise owl
+      draped in **Cerulean Mist** feathers. Peanut, a hyperactive mouse, loved
+      to hide among the **Cherry Blossom Pink** petals while Shadow, the
+      stealthy black cat, faded into the night like a shadow swallowed by
+      indigo.
+
+
+      But even the happiest hills have darkness lurking. Deep within Copper
+      Canyon, a forbidden bloom grew. Legend had it that those who sniffed its
+      **Stormy Slate** petals would lose themselves to wild enchantment.
+
+
+      One fateful evening, Ruby—a sly snake with gem-like scales—dared Finn, her
+      rabbit neighbor, to sneak down and find the bloom. Hazel, a gentle deer
+      known for her earthy wisdom, warned: "Copper Canyon keeps its secrets
+      well. You may not come back the same."
+
+
+      Unheeding, the pets trekked through the colorful fog. The bloom’s
+      fragrance lured them, painting strange colors in their minds: sunsets that
+      never ended, indigos that never lightened. Bella’s tail fizzed with
+      static, Max cawed warnings, but it was too late—the bloom opened, pulsing
+      with all their secrets.
+
+
+      From that night on, Copper Canyon was never quite the same. The pets,
+      having tasted the bloom’s magic, found mischief easier, life brighter, and
+      secrets thicker. And above, the sky blazed hues none could name—except,
+      perhaps, those with a wicked streak and a friend called Bella.
+
+
+      ---
+
+
+      **The End.**
+
+
+      Would you like a follow-up? Or maybe stories that star a particular pet
+      and color? Let me know!
+    id: 2c1eb260-b7b2-4072-9c35-f2f3f3675179
+  - &ref_6
+    type: circle
+    role: default
+    name: Email
+    command: >
+      input=$(cat) && \
+
+      escaped_input=$(printf '%s' "$input" | jq -Rs . | sed 's/^"//; s/"$//') &&
+      \
+
+      curl -s https://api.openai.com/v1/responses \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $OPENAI_API_KEY" \
+        -d '{
+        "model": "gpt-4.1",
+        "input": [
+          {
+            "role": "system",
+            "content": [
+              {
+                "type": "input_text",
+                "text": "<task>\nUse the input to compose a short and concise email, summarize and put it into 5 sentences.\n</task>\n\n<input>\n'"$escaped_input"'\n</input>\n"
+              }
+            ]
+          }
+        ],
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "reasoning": {},
+        "tools": [],
+        "temperature": 1,
+        "max_output_tokens": 2048,
+        "top_p": 1,
+        "store": true
+      }'
+    center:
+      - 0.9932483572005282
+      - 0.06522081714997612
+    radius: 0.1
+    color: *ref_0
+    selected: false
+    highlight: false
+    outputText: |-
+      {
+        "id": "resp_685d21281674819fae1da6c87537d9ec02e884b6c546fc4d",
+        "object": "response",
+        "created_at": 1750933800,
+        "status": "completed",
+        "background": false,
+        "error": null,
+        "incomplete_details": null,
+        "instructions": null,
+        "max_output_tokens": 2048,
+        "max_tool_calls": null,
+        "model": "gpt-4.1-2025-04-14",
+        "output": [
+          {
+            "id": "msg_685d21287ad8819fbe1a5ad35f68a41902e884b6c546fc4d",
+            "type": "message",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "annotations": [],
+                "text": "Subject: Summary: \"The Wicked Bloom of Copper Canyon\"\n\nHi,\n\nHere\u2019s a quick summary of the story \"The Wicked Bloom of Copper Canyon.\" In the magical town of Copper Canyon, colorful skies and clever animals like Bella the fox and Max the raven add to the charm. A group of unusual pets hears about a mysterious, enchanted bloom rumored to cause enchantment. Ignoring warnings, they find it, and the bloom\u2019s magic changes the town and themselves forever. The pets\u2019 adventures make Copper Canyon brighter, more mischievous, and full of secrets from then on.\n\nLet me know if you\u2019d like a follow-up or a story about a specific pet or color!"
+              }
+            ],
+            "role": "assistant"
+          }
+        ],
+        "parallel_tool_calls": true,
+        "previous_response_id": null,
+        "reasoning": {
+          "effort": null,
+          "summary": null
+        },
+        "service_tier": "default",
+        "store": true,
+        "temperature": 1.0,
+        "text": {
+          "format": {
+            "type": "text"
+          }
+        },
+        "tool_choice": "auto",
+        "tools": [],
+        "top_p": 1.0,
+        "truncation": "disabled",
+        "usage": {
+          "input_tokens": 534,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens": 137,
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          },
+          "total_tokens": 671
+        },
+        "user": null,
+        "metadata": {}
+      }
+    id: 362761f5-ff2b-44ff-8039-8456ee6cf516
+  - &ref_7
+    type: circle
+    role: default
+    name: Filter
+    command: jq -r '.output[0].content[0].text'
+    center:
+      - 1.2205497382428825
+      - 0.06602031200810171
+    radius: 0.1
+    color: *ref_0
+    selected: false
+    highlight: false
+    outputText: >
+      Subject: Summary: "The Wicked Bloom of Copper Canyon"
+
+
+      Hi,
+
+
+      Here’s a quick summary of the story "The Wicked Bloom of Copper Canyon."
+      In the magical town of Copper Canyon, colorful skies and clever animals
+      like Bella the fox and Max the raven add to the charm. A group of unusual
+      pets hears about a mysterious, enchanted bloom rumored to cause
+      enchantment. Ignoring warnings, they find it, and the bloom’s magic
+      changes the town and themselves forever. The pets’ adventures make Copper
+      Canyon brighter, more mischievous, and full of secrets from then on.
+
+
+      Let me know if you’d like a follow-up or a story about a specific pet or
+      color!
+    id: 4950b1ce-f9b5-4d44-949f-06a042ea44b9
+  - type: edge
+    from: *ref_1
+    to: *ref_2
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_1
+    to: *ref_2
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_3
+    to: *ref_4
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_4
+    to: *ref_1
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_2
+    to: *ref_5
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_5
+    to: *ref_6
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_6
+    to: *ref_7
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_7
+    to: *ref_8
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_3
+    to: *ref_9
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_9
+    to: *ref_10
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false
+  - type: edge
+    from: *ref_10
+    to: *ref_2
+    color:
+      - 1
+      - 1
+      - 1
+      - 1
+    selected: false
+    highlight: false

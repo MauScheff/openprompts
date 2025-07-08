@@ -1,0 +1,5 @@
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "include": ["src/**/*", "tests/**/*", "svelte.config.ts", "vite.config.ts", "rollup.config.js"],
+  "exclude": ["node_modules"]
+}

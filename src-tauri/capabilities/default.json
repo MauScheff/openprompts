@@ -1,0 +1,57 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "exec-sh",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": "^[\\s\\S]*$"
+            }
+          ]
+        },
+        {
+          "name": "echo-message",
+          "cmd": "echo",
+          "args": [
+            {
+              "validator": ".+"
+            }
+          ]
+        },
+        {
+          "name": "curl-request",
+          "cmd": "curl",
+          "args": [
+            {
+              "validator": ".+"
+            }
+          ]
+        },
+        {
+          "name": "jq-process",
+          "cmd": "jq",
+          "args": [
+            {
+              "validator": ".+"
+            }
+          ]
+        }
+      ]
+    },
+    "shell:default",
+    "dialog:default",
+    "fs:allow-home-read-recursive",
+    "fs:allow-home-write-recursive",
+    "core:resources:allow-close"
+  ]
+}

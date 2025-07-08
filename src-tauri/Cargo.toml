@@ -1,0 +1,15 @@
+[package]
+name = "OpenPrompts"
+version = "1.0.0"
+edition = "2021"
+build = "build.rs"    # 👈 Required for build.rs to be recognized
+
+[dependencies]
+tauri = { version = "2.5.1", features = [] }
+tauri-plugin-shell = "2"
+serde_json = "1.0"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+
+[build-dependencies]
+tauri-build = { version = "2.0.0-rc.13", features = [] }

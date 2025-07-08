@@ -1,0 +1,50 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.5.0",
+  "productName": "OpenPrompts",
+  "version": "1.0.0",
+  "identifier": "com.zentauri.openprompts",
+  "build": {
+    "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5001",
+    "frontendDist": "../public"
+  },
+  "app": {
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      { 
+        "title": "OpenPrompts",        
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "visible": true,
+        "transparent": false,
+        "maximized": true
+      }
+    ]
+  },
+  "bundle": {
+    "macOS": {
+      "dmg": {
+        "windowPosition": {
+          "x": 400,
+          "y": 400
+        },
+        "windowSize": {
+          "width": 800,
+          "height": 600
+        }
+      }
+    },
+    "icon": [
+      "./icons/icon.icns",
+      "./icons/icon.ico",
+      "./icons/icon.png"
+    ],
+    "resources": [],
+    "externalBin": []
+  },
+  "plugins": {}
+}

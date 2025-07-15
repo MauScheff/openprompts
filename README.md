@@ -49,3 +49,7 @@ needs noratization.
 
 This project is licensed under the **GNU Affero General Public License v3.0**.  
 See the [LICENSE](./LICENSE) file for details.
+
+## AI Notice
+
+This project was VibeCoded as a protoype and may need refactoring.

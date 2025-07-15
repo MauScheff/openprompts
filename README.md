@@ -10,9 +10,10 @@ Makes it easy and flexible to design, iterate, save, and share multi-step prompt
 
 
 # Setup
-1. install rustup.    
-2. Run `npm install` to pull in Vite, @sveltejs/vite-plugin-svelte and @tauri-apps packages.
-3. During development:
+1. install rustup.
+2. Run `npm install` to pull in dependencies including Vite, Svelte plugins, and Tauri packages.
+3. Run `npm run check` to type-check and validate Svelte components (`svelte-check`).
+4. During development:
    • `npm run dev` to start Vite’s dev server.
    • In another shell (or via `npm run tauri:dev`) launch the Tauri window pointing at localhost.
 4. For production:

@@ -1,33 +1,35 @@
 <script lang="ts">
-    import {
+import {
         type CircleNode,
         type Edge,
         type SceneShape,
         ensureInputOutputNodes,
         generateId,
         getDefaultScene,
-        ioColor,
-        parseSavedScene,
-        serializeScene
-    } from './lib/scene';
+        ioColor
+    } from "./lib/scene";
+    import {
+        exportScene as doExportScene,
+        importScene as doImportScene,
+        loadSceneFromStorage,
+        newScene as makeNewScene,
+        saveSceneToStorage,
+    } from "./lib/SceneManager";
 
     import { run } from "svelte/legacy";
 
     import { invoke } from "@tauri-apps/api/core";
 
-    import { open, save } from "@tauri-apps/plugin-dialog";
     import reglLib from "regl";
     import { onMount, tick } from "svelte";
-    import { parseFromYaml, parseToYaml } from "./yaml";
-// import { readFile } from "@tauri-apps/plugin-fs";
-    // import * as path from "@tauri-apps/api/path";
-    import { create, readTextFile } from "@tauri-apps/plugin-fs";
 
     import BashNodeEditor from "./node-editors/BashNodeEditor.svelte";
     import NewNodeEditor from "./node-editors/NewNodeEditor.svelte";
     import NodeJSEditor from "./node-editors/NodeJSEditor.svelte";
     import OpenAINodeEditor from "./node-editors/OpenAINodeEditor.svelte";
 // Shared inspector input components
+    import { addCircle, makeDrawCircle } from "./components/Node/Node";
+    import Node from "./components/Node/Node.svelte";
     import SelectField from "./components/SelectField.svelte";
     import TextAreaField from "./components/TextAreaField.svelte";
     import TextField from "./components/TextField.svelte";
@@ -48,9 +50,16 @@
 
     import { executors } from "./node-executors";
 
+    // Shared edge and node helpers
+    import {
+        addEdge,
+        drawEdges,
+        makeEdgeCommands,
+    } from "./components/Edge/Edge";
     // Direct reference to the canvas element for WebGL rendering
     // Use reactive state so that effects depending on canvas run after it is bound
     let canvas = $state<HTMLCanvasElement | null>(null);
+    let drawCircle = $state(null);
     // Last focused input/textarea for variable insertion
     let lastFocusedEl: HTMLInputElement | HTMLTextAreaElement | null = null;
     let scene = $state<SceneShape[]>([]);
@@ -69,56 +78,18 @@
         if (sceneNameInputEl) (sceneNameInputEl as HTMLInputElement).focus();
     }
 
-    // Load persisted scene or initialize default
-    if (typeof window !== "undefined") {
-        const saved = window.localStorage.getItem("scene");
-        if (saved) {
-            try {
-                const parsedRaw = JSON.parse(saved);
-                const { meta, scene: loaded } = parseSavedScene(parsedRaw);
-                sceneName = meta.name;
-                sceneDescription = meta.description;
-                sceneInstructions = meta.instructions;
-                sceneRequirements = meta.requirements;
-                sceneCompatibility = meta.compatibility;
-                scene = loaded;
-            } catch (err) {
-                console.error("Failed to load scene from localStorage:", err);
-                sceneName = "Untitled Flow";
-                sceneDescription = "";
-                sceneInstructions = "";
-                sceneRequirements = "";
-                sceneCompatibility = "";
-                scene = getDefaultScene();
-            }
-        } else {
-            sceneName = "Untitled Flow";
-            sceneDescription = "";
-            sceneInstructions = "";
-            sceneRequirements = "";
-            sceneCompatibility = "";
-            scene = getDefaultScene();
-        }
-    } else {
-        // SSR
-        sceneName = "Untitled Flow";
-        sceneDescription = "";
-        sceneInstructions = "";
-        sceneRequirements = "";
-        sceneCompatibility = "";
-        scene = getDefaultScene();
-    }
-    // Ensure there is always an input and output node
-    scene = ensureInputOutputNodes(scene);
+    // Load scene & metadata from storage or default
+    const { meta, scene: initialScene } = loadSceneFromStorage();
+    ({ name: sceneName, description: sceneDescription, instructions: sceneInstructions,
+        requirements: sceneRequirements, compatibility: sceneCompatibility } = meta);
+    scene = initialScene;
     // Define color constants for nodes
     const defaultNodeColor = [0.85, 0.85, 0.85, 1]; // light gray for default nodes
     const selectedColor = [0.38, 0.93, 0.67, 1]; // green for selected
     const highlightColor = [1, 0.85, 0.38, 1]; // yellow for highlight
     // View transform for positioning and zoom
     let viewScale = $state(1);
-    let viewOffset = $state([0, 0]);
-    // Screen-space labels below each node
-    let labels = $state([]);
+    let viewOffset = $state<[number, number]>([0, 0]);
     // Resizable info panel width
     let panelWidth = $state(350);
     let isResizing = false;
@@ -154,40 +125,6 @@
         }
     }
 
-    function addCircle(x, y) {
-        const prevSelected = scene.find(
-            (s): s is CircleNode => s.type === "circle" && s.selected,
-        );
-        const newNode: CircleNode = {
-            id: generateId(),
-            type: "circle",
-            role: "default",
-            nodeType: "newNode",
-            name: `Node ${scene.filter((s): s is CircleNode => s.type === "circle").length - 1}`,
-            center: [x, y],
-            radius: 0.1,
-            color: defaultNodeColor,
-            selected: true,
-            highlight: false,
-            outputText: "",
-        };
-        if (prevSelected) {
-            prevSelected.selected = false;
-        }
-        scene.push(newNode);
-        if (prevSelected) {
-            const newEdge: Edge = {
-                type: "edge",
-                from: prevSelected,
-                to: newNode,
-                color: [1, 1, 1, 1],
-                selected: false,
-            };
-            scene.push(newEdge);
-        }
-        scene = [...scene];
-    }
-
     onMount(() => {
         // Set canvas size and pixel ratio for crisp rendering
         const resizeCanvas = () => {
@@ -215,117 +152,17 @@
         let isPanning = false;
         let panStart = [0, 0];
         let offsetStart = [0, 0];
-        // Quad covering unit circle area for fragment discarding
-        const quadPositions = [
-            [-1, -1],
-            [1, -1],
-            [1, 1],
-            [-1, -1],
-            [1, 1],
-            [-1, 1],
-        ];
-        const quadBuffer = regl.buffer(quadPositions);
-        const drawCircle = regl({
-            frag: `
-            precision mediump float;
-            varying vec4 fragColor;
-            varying vec2 vPosition;
-            void main() {
-                if (dot(vPosition, vPosition) > 1.0) discard;
-                gl_FragColor = fragColor;
-            }`,
-            vert: `
-            precision mediump float;
-            attribute vec2 position;
-            uniform vec2 center;
-            uniform float radius;
-            uniform float aspect;
-            uniform vec4 color;
-            uniform float viewScale;
-            uniform vec2 viewOffset;
-            varying vec4 fragColor;
-            varying vec2 vPosition;
-            void main() {
-                vPosition = position;
-                vec2 pos = center + position * vec2(radius * aspect, radius);
-                // Apply view transform
-                vec2 transformed = pos * viewScale + viewOffset;
-                gl_Position = vec4(transformed, 0, 1);
-                fragColor = color;
-            }`,
-            attributes: { position: quadBuffer },
-            uniforms: {
-                aspect: (ctx) => ctx.viewportHeight / ctx.viewportWidth,
-                center: regl.prop<{ center: [number, number] }, any>("center"),
-                radius: regl.prop<{ radius: number }, any>("radius"),
-                color: regl.prop<{ color: number[] }, any>("color"),
-                viewScale: () => viewScale,
-                viewOffset: () => viewOffset,
-            },
-            count: 6,
-            primitive: "triangles",
-        });
-        // Edge drawing commands
-        const drawLine = regl({
-            frag: `
-            precision mediump float;
-            uniform vec4 color;
-            void main() {
-                gl_FragColor = color;
-            }`,
-            vert: `
-            precision mediump float;
-            attribute vec2 position;
-            uniform float viewScale;
-            uniform vec2 viewOffset;
-            void main() {
-                vec2 pos = position * viewScale + viewOffset;
-                gl_Position = vec4(pos, 0, 1);
-            }`,
-            attributes: {
-                position: regl.prop<{ positions: [number, number][] }, any>(
-                    "positions",
-                ),
-            },
-            uniforms: {
-                color: regl.prop<{ color: number[] }, any>("color"),
-                viewScale: () => viewScale,
-                viewOffset: () => viewOffset,
-            },
-            // number of vertices for each line segment (2 points)
-            count: 2,
-            primitive: "lines",
-        });
-        const drawTriangle = regl({
-            frag: `
-            precision mediump float;
-            uniform vec4 color;
-            void main() {
-                gl_FragColor = color;
-            }`,
-            vert: `
-            precision mediump float;
-            attribute vec2 position;
-            uniform float viewScale;
-            uniform vec2 viewOffset;
-            void main() {
-                vec2 pos = position * viewScale + viewOffset;
-                gl_Position = vec4(pos, 0, 1);
-            }`,
-            attributes: {
-                position: regl.prop<{ positions: [number, number][] }, any>(
-                    "positions",
-                ),
-            },
-            uniforms: {
-                color: regl.prop<{ color: number[] }, any>("color"),
-                viewScale: () => viewScale,
-                viewOffset: () => viewOffset,
-            },
-            // number of vertices for each triangle (3 points)
-            count: 3,
-            primitive: "triangles",
-        });
+        // Initialize draw commands for nodes and edges
+        const { drawLine, drawTriangle } = makeEdgeCommands(
+            regl,
+            () => viewScale,
+            () => [viewOffset[0], viewOffset[1]],
+        );
+        drawCircle = makeDrawCircle(
+            regl,
+            () => viewScale,
+            () => [viewOffset[0], viewOffset[1]],
+        );
         // Drag and drop support for circles
         let dragging: CircleNode | null = null;
         let dragOffset = [0, 0];
@@ -372,33 +209,13 @@
                     prevSelected.type === "circle" &&
                     prevSelected.role !== "output"
                 ) {
-                    // Remove any existing edge between these two circles
-                    for (let i = scene.length - 1; i >= 0; i--) {
-                        const s = scene[i];
-                        if (
-                            s.type === "edge" &&
-                            ((s.from === prevSelected && s.to === hitShape) ||
-                                (s.from === hitShape && s.to === prevSelected))
-                        ) {
-                            scene.splice(i, 1);
-                        }
-                    }
-                    // Connect the previously selected circle to the clicked circle
-                    scene.push({
-                        type: "edge",
-                        from: prevSelected,
-                        to: hitShape,
-                        color: [1, 1, 1, 1],
-                        selected: false,
-                    });
-                    // Unselect all circles
+                    // Toggle edge between selected and clicked circles
+                    scene = addEdge(scene, prevSelected, hitShape);
+                    // Reset selection and dragging
                     scene.forEach((s) => {
                         if (s.type === "circle") s.selected = false;
                     });
-                    // Cancel any dragging state
                     dragging = null;
-                    // Trigger reactivity for scene changes
-                    scene = [...scene];
                     return;
                 }
                 // No connection: begin dragging/selecting the clicked circle
@@ -530,7 +347,7 @@
             // Convert to world coordinates
             const worldX = (ndcX - viewOffset[0]) / viewScale;
             const worldY = (ndcY - viewOffset[1]) / viewScale;
-            addCircle(worldX, worldY);
+            scene = addCircle(scene, worldX, worldY, defaultNodeColor);
         });
         // Delete selected circles or edges on Backspace when not editing text
         window.addEventListener("keydown", (e) => {
@@ -596,73 +413,20 @@
             // Warm dark grey background
             regl.clear({ color: [0.18, 0.18, 0.18, 1], depth: 1 });
             // Draw edges with arrow heads
-            scene.forEach((shape) => {
-                if (shape.type === "edge") {
-                    const p1 = shape.from.center;
-                    const p2 = shape.to.center;
-                    // Highlight if selected
-                    const edgeColor = shape.selected
-                        ? selectedColor
-                        : shape.highlight
-                          ? highlightColor
-                          : shape.color;
-                    // Compute direction and clip line to circle perimeters
-                    const dx = p2[0] - p1[0];
-                    const dy = p2[1] - p1[1];
-                    const len = Math.sqrt(dx * dx + dy * dy);
-                    if (len > 0) {
-                        const ux = dx / len;
-                        const uy = dy / len;
-                        const aspect = canvas.clientHeight / canvas.clientWidth;
-                        // Source circle boundary
-                        const r1 = shape.from.radius;
-                        const rX1 = r1 * aspect;
-                        const rY1 = r1;
-                        const t0 =
-                            (rX1 * rY1) /
-                            Math.sqrt(
-                                ux * ux * rY1 * rY1 + uy * uy * rX1 * rX1,
-                            );
-                        const start = [p1[0] + ux * t0, p1[1] + uy * t0];
-                        // Target circle boundary
-                        const r2 = shape.to.radius;
-                        const rX2 = r2 * aspect;
-                        const rY2 = r2;
-                        const t1 =
-                            (rX2 * rY2) /
-                            Math.sqrt(
-                                ux * ux * rY2 * rY2 + uy * uy * rX2 * rX2,
-                            );
-                        const end = [p2[0] - ux * t1, p2[1] - uy * t1];
-                        // Draw clipped line
-                        drawLine({ positions: [start, end], color: edgeColor });
-                        // Draw arrow head at the perimeter
-                        const arrowLen = r2 * 0.4;
-                        const arrowWid = r2 * 0.15;
-                        const baseX = end[0] - ux * arrowLen;
-                        const baseY = end[1] - uy * arrowLen;
-                        const px = -uy;
-                        const py = ux;
-                        const left = [
-                            baseX + px * arrowWid,
-                            baseY + py * arrowWid,
-                        ];
-                        const right = [
-                            baseX - px * arrowWid,
-                            baseY - py * arrowWid,
-                        ];
-                        drawTriangle({
-                            positions: [[end[0], end[1]], left, right],
-                            color: edgeColor,
-                        });
-                    }
-                }
-            });
+            drawEdges(
+                scene,
+                drawLine,
+                drawTriangle,
+                viewScale,
+                viewOffset,
+                selectedColor,
+                highlightColor,
+                canvas!,
+            );
             // Draw circles on top of edges
             scene.forEach((shape) => {
                 if (shape.type === "circle") {
                     if (shape.selected) {
-                        // Selected: draw an outline ring then fill
                         const outlineFactor = 1.2;
                         drawCircle({
                             center: shape.center,
@@ -675,14 +439,12 @@
                             color: shape.color,
                         });
                     } else if (shape.highlight) {
-                        // Highlighted during play: fill with highlight color
                         drawCircle({
                             center: shape.center,
                             radius: shape.radius,
                             color: highlightColor,
                         });
                     } else {
-                        // Normal node
                         drawCircle({
                             center: shape.center,
                             radius: shape.radius,
@@ -708,18 +470,6 @@
             const h = (canvas as HTMLCanvasElement).clientHeight;
             (canvas as HTMLCanvasElement).width = w * window.devicePixelRatio;
             (canvas as HTMLCanvasElement).height = h * window.devicePixelRatio;
-            labels = scene
-                .filter((s) => s.type === "circle")
-                .map((s) => {
-                    const xN = s.center[0] * viewScale + viewOffset[0];
-                    const yN = s.center[1] * viewScale + viewOffset[1];
-                    const xPx = ((xN + 1) / 2) * w;
-                    // Compute pixel radius in Y to place label just below the circle
-                    const pixelRadius = s.radius * viewScale * (h / 2);
-                    const margin = 4;
-                    const yPx = ((1 - yN) / 2) * h + pixelRadius + margin;
-                    return { x: xPx, y: yPx, name: s.name };
-                });
             selectedShape = scene.find(
                 (s) => s.type === "circle" && (s.highlight || s.selected),
             ) as CircleNode | undefined;
@@ -1032,14 +782,17 @@
                             outputData = await exec(node, inputData, {
                                 envPrefix,
                                 variables: varsForNode,
-                                apiKey: node.apiKey
+                                apiKey: node.apiKey,
                             });
                         } catch (err) {
                             console.error(
                                 `Error executing ${node.nodeType} node "${node.name}":`,
-                                err
+                                err,
                             );
-                            outputData = err instanceof Error ? err.message : String(err);
+                            outputData =
+                                err instanceof Error
+                                    ? err.message
+                                    : String(err);
                         }
                         node.outputText = outputData;
                     } else {
@@ -1096,38 +849,13 @@
     }
 
     function newScene() {
-        scene = [
-            // Default input node
-            {
-                id: generateId(),
-                type: "circle",
-                role: "input",
-                nodeType: "input",
-                center: [-0.9, 0],
-                radius: 0.1,
-                color: ioColor,
-                selected: false,
-                inputText: "",
-                envVars: [],
-                name: "Input",
-                highlight: false,
-            },
-            // Default output node
-            {
-                id: generateId(),
-                type: "circle",
-                role: "output",
-                nodeType: "output",
-                center: [0.9, 0],
-                radius: 0.1,
-                color: ioColor,
-                selected: false,
-                outputText: "",
-                name: "Output",
-                highlight: false,
-            },
-        ];
-        sceneName = "Untitled Flow";
+        const { meta, scene: next } = makeNewScene();
+        sceneName = meta.name;
+        sceneDescription = meta.description;
+        sceneInstructions = meta.instructions;
+        sceneRequirements = meta.requirements;
+        sceneCompatibility = meta.compatibility;
+        scene = next;
     }
 
     async function copyOutput() {
@@ -1142,83 +870,43 @@
     }
 
     async function importScene() {
-        // Prompt for a YAML file to import
-        const file = await open({
-            multiple: false,
-            directory: false,
-            filters: [{ name: "Flow Scene", extensions: ["yaml", "yml"] }],
-        });
-        if (!file) {
-            return;
+        try {
+            const result = await doImportScene();
+            if (result) {
+                ({ meta: { name: sceneName, description: sceneDescription,
+                    instructions: sceneInstructions, requirements: sceneRequirements,
+                    compatibility: sceneCompatibility }, scene } = result);
+                hasPath = getPipelineNodes().length > 0;
+                editingScene = true;
+            }
+        } catch (err) {
+            alert(`Failed to import scene: ${err}`);
         }
-        // Parse YAML content
-        const sceneYaml = await readTextFile(file);
-        const raw = parseFromYaml(sceneYaml);
-        if (!raw || typeof raw !== "object" || raw.scene == null) {
-            alert("Invalid scene format. Please check the YAML file.");
-            return;
-        }
-        // Deserialize using built-in parser
-        const { meta, scene: loaded } = parseSavedScene(raw);
-        // Apply metadata fields
-        sceneName = meta.name;
-        sceneDescription = meta.description;
-        sceneInstructions = meta.instructions;
-        sceneRequirements = meta.requirements;
-        sceneCompatibility = meta.compatibility;
-        // Ensure required I/O nodes and trigger reactivity
-        scene = ensureInputOutputNodes(loaded);
-        scene = [...scene];
-        // Recompute playability
-        hasPath = getPipelineNodes().length > 0;
-        // Show the imported scene
-        editingScene = true;
     }
 
     // Prompt user to choose file path for exporting scene (dialog only)
     async function exportScene() {
-        // Prompt user to choose file path for exporting scene
-        const path = await save({
-            filters: [{ name: "Flow Scene", extensions: ["yaml", "yml"] }],
-        });
-
-        // Path is null if dialog was cancelled
-        if (path) {
-            console.log("Selected export path:", path);
-        } else {
-            console.log("Save dialog was cancelled");
-            return;
+        try {
+            await doExportScene(
+                { name: sceneName, description: sceneDescription,
+                  instructions: sceneInstructions, requirements: sceneRequirements,
+                  compatibility: sceneCompatibility },
+                scene
+            );
+        } catch (err) {
+            alert(`Failed to export scene: ${err}`);
         }
+    }
 
-        // Serialize current scene and dump to YAML
-        const serialized = serializeScene(scene, {
+    // Persist scene to storage whenever it changes
+    $effect(() => {
+        saveSceneToStorage({
             name: sceneName,
             description: sceneDescription,
             instructions: sceneInstructions,
             requirements: sceneRequirements,
             compatibility: sceneCompatibility,
-        });
-        const yaml = parseToYaml(serialized);
-        if (!yaml) {
-            alert("Failed to serialize scene.");
-            return;
-        }
-        const fileHandle = await create(path);
-        await fileHandle.write(new TextEncoder().encode(yaml));
-        await fileHandle.close();
-    }
-
-    run(() => {
-        if (typeof window !== "undefined") {
-            const savedObj = serializeScene(scene, {
-                name: sceneName,
-                description: sceneDescription,
-                instructions: sceneInstructions,
-                requirements: sceneRequirements,
-                compatibility: sceneCompatibility,
-            });
-            window.localStorage.setItem("scene", JSON.stringify(savedObj));
-        }
+        }, scene);
     });
 
     function handleSceneTitleKeydown(e) {
@@ -1421,15 +1109,8 @@
 
     <div class="canvas-container">
         <canvas bind:this={canvas}></canvas>
-        {#each labels as label, i (i)}
-            {#if label.name}
-                <div
-                    class="node-label"
-                    style="left: {label.x}px; top: {label.y}px;"
-                >
-                    {label.name}
-                </div>
-            {/if}
+        {#each scene.filter((s) => s.type === "circle") as node (node.id)}
+            <Node {node} {viewScale} {viewOffset} {canvas} />
         {/each}
     </div>
 
@@ -1607,23 +1288,6 @@
         gap: 8px;
         align-items: center;
         margin-bottom: 8px;
-    }
-
-    .node-label {
-        position: absolute;
-        transform: translateX(-50%);
-        background: var(--surface);
-        color: var(--text-primary);
-        padding: 6px 12px;
-        border: 1px solid var(--text-secondary);
-        border-radius: var(--border-radius);
-        font-size: 1em;
-        font-weight: 600;
-        box-shadow: var(--shadow-elevation);
-        white-space: nowrap;
-        pointer-events: none;
-        z-index: 1;
-        transition: transform var(--transition-duration) ease;
     }
     /* Enhanced styling for output areas to improve readability */
     .info-panel textarea[readonly] {

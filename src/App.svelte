@@ -1,19 +1,19 @@
 <script lang="ts">
+import { invoke } from "@tauri-apps/api/core";
+import { tick } from "svelte";
+import { run } from "svelte/legacy";
 import type { CircleNode, Edge, SceneShape } from "./lib/scene";
 import {
-  exportScene as doExportScene,
-  importScene as doImportScene,
-  loadSceneFromStorage,
-  newScene as makeNewScene,
-  saveSceneToStorage,
+    exportScene as doExportScene,
+    importScene as doImportScene,
+    loadSceneFromStorage,
+    newScene as makeNewScene,
+    saveSceneToStorage,
 } from "./lib/SceneManager";
-import { run } from "svelte/legacy";
-import { invoke } from "@tauri-apps/api/core";
-import { onMount, tick } from "svelte";
 
 import CanvasArea from "./components/Canvas/CanvasArea.svelte";
-import InfoPanel from "./components/InfoPanel/InfoPanel.svelte";
 import Controls from "./components/Controls/Controls.svelte";
+import InfoPanel from "./components/InfoPanel/InfoPanel.svelte";
 import { executors } from "./node-executors";
 
 let canvas = $state<HTMLCanvasElement | null>(null);

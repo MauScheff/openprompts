@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { CircleNode } from '../../lib/scene';
+    import type { CircleNode } from "../../lib/scene";
 
     export let node: CircleNode;
     export let viewScale: number;
@@ -7,7 +7,7 @@ import type { CircleNode } from '../../lib/scene';
     export let canvas: HTMLCanvasElement;
 
     // This is for the label
-    let labelStyle = '';
+    let labelStyle = "";
     $: {
         if (canvas && node) {
             const w = canvas.clientWidth;
@@ -21,7 +21,6 @@ import type { CircleNode } from '../../lib/scene';
             labelStyle = `left: ${xPx}px; top: ${yPx}px;`;
         }
     }
-
 </script>
 
 {#if node && node.name}

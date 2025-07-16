@@ -1,25 +1,48 @@
 <script lang="ts">
-  import TextField from "../TextField.svelte";
-  import TextAreaField from "../TextAreaField.svelte";
-  import SelectField from "../SelectField.svelte";
+  import type { CircleNode, SceneShape } from "../../lib/scene";
   import BashNodeEditor from "../../node-editors/BashNodeEditor.svelte";
   import NewNodeEditor from "../../node-editors/NewNodeEditor.svelte";
   import NodeJSEditor from "../../node-editors/NodeJSEditor.svelte";
   import OpenAINodeEditor from "../../node-editors/OpenAINodeEditor.svelte";
-  import type { CircleNode, SceneShape } from "../../lib/scene";
+  import SelectField from "../SelectField.svelte";
+  import TextAreaField from "../TextAreaField.svelte";
+  import TextField from "../TextField.svelte";
 
-  export let editingScene = $bindable(false);
-  export let inspectorNode: CircleNode | null = $bindable(null);
-  export let isRunning = false;
-  export let scene: SceneShape[] = $bindable([]);
-  export let sceneName = $bindable("");
-  export let sceneDescription = $bindable("");
-  export let sceneInstructions = $bindable("");
-  export let sceneRequirements = $bindable("");
-  export let sceneCompatibility = $bindable("");
-  export let sceneNameInputEl: HTMLInputElement | null = $bindable(null);
+  let {
+    inspectorNode = $bindable(null),
+    isRunning = false,
+    scene = $bindable([]),
+    sceneName = $bindable(""),
+    sceneDescription = $bindable(""),
+    sceneInstructions = $bindable(""),
+    sceneRequirements = $bindable(""),
+    sceneCompatibility = $bindable(""),
+    sceneNameInputEl = $bindable(null),
+    editingScene = $bindable(false),
+    typeOptions = [],
+    availableVariables = [],
+    handleVarHover = () => {},
+    handleVarClick = () => {},
+    copyOutput = () => {},
+  } :
+  {
+    inspectorNode?: CircleNode | null;
+    isRunning?: boolean;
+    scene?: SceneShape[];
+    sceneName?: string;
+    sceneDescription?: string;
+    sceneInstructions?: string;
+    sceneRequirements?: string;
+    sceneCompatibility?: string;
+    sceneNameInputEl?: HTMLInputElement | null;
+    editingScene?: boolean;
+    typeOptions?: Array<{ value: string; label: string }>;
+    availableVariables?: string[];
+    handleVarHover?: (name: string, active: boolean) => void;
+    handleVarClick?: (name: string) => void;
+    copyOutput?: () => void;
+  } = $props();
 
-  export let typeOptions: Array<{ value: string; label: string }> = [];
 
   const nodeAdapters = {
     newNode: { component: NewNodeEditor, label: "New Node" },
@@ -28,10 +51,6 @@
     nodeJS: { component: NodeJSEditor, label: "NodeJS" },
   };
 
-  export let availableVariables: string[] = [];
-  export let handleVarHover: (name: string, active: boolean) => void = () => {};
-  export let handleVarClick: (name: string) => void = () => {};
-  export let copyOutput: () => void = () => {};
 
   // Panel resize state
   let panelWidth = $state(350);
@@ -51,7 +70,10 @@
     const delta = panelResizeStartX - e.clientX;
     const minWidth = 200;
     const maxWidth = window.innerWidth - 100;
-    panelWidth = Math.max(minWidth, Math.min(maxWidth, panelResizeStartWidth + delta));
+    panelWidth = Math.max(
+      minWidth,
+      Math.min(maxWidth, panelResizeStartWidth + delta),
+    );
   }
   function handlePanelResizeMouseUp() {
     if (isResizing) {
@@ -67,32 +89,81 @@
     {#if editingScene}
       <h3>Scene</h3>
       <label for="scene-title-input">Title:</label>
-      <TextField bind:value={sceneName} bind:el={sceneNameInputEl} disabled={isRunning} />
+      <TextField
+        bind:value={sceneName}
+        bind:el={sceneNameInputEl}
+        disabled={isRunning}
+      />
       <label for="scene-description">Description:</label>
-      <TextAreaField rows={5} bind:value={sceneDescription} disabled={isRunning} />
+      <TextAreaField
+        rows={5}
+        bind:value={sceneDescription}
+        disabled={isRunning}
+      />
       <label for="scene-instructions">Instructions:</label>
-      <TextAreaField rows={3} bind:value={sceneInstructions} disabled={isRunning} />
+      <TextAreaField
+        rows={3}
+        bind:value={sceneInstructions}
+        disabled={isRunning}
+      />
       <label for="scene-requirements">Requirements:</label>
-      <TextAreaField rows={3} bind:value={sceneRequirements} disabled={isRunning} />
+      <TextAreaField
+        rows={3}
+        bind:value={sceneRequirements}
+        disabled={isRunning}
+      />
       <label for="scene-compatibility">Compatibility:</label>
-      <TextAreaField rows={3} bind:value={sceneCompatibility} disabled={isRunning} />
+      <TextAreaField
+        rows={3}
+        bind:value={sceneCompatibility}
+        disabled={isRunning}
+      />
     {:else if inspectorNode}
       {#if inspectorNode.role === "input"}
         <h3>Input</h3>
         <span>Name: {inspectorNode.name}</span>
         <label for="inspector-input">Input:</label>
-        <TextAreaField rows={5} bind:value={inspectorNode.inputText} disabled={isRunning} />
+        <TextAreaField
+          rows={5}
+          bind:value={inspectorNode.inputText}
+          disabled={isRunning}
+        />
         <label>Variables:</label>
         {#each inspectorNode.envVars as env, idx (idx)}
           <div class="env-row">
             <div class="env-key-row">
-              <TextField placeholder="Key" bind:value={env.key} disabled={isRunning} />
-              <button class="copy-button" onclick={() => { inspectorNode.envVars.splice(idx, 1); scene = [...scene]; }} disabled={isRunning}>Remove</button>
+              <TextField
+                placeholder="Key"
+                bind:value={env.key}
+                disabled={isRunning}
+              />
+              <button
+                class="copy-button"
+                onclick={() => {
+                  inspectorNode.envVars.splice(idx, 1);
+                  scene = [...scene];
+                }}
+                disabled={isRunning}>Remove</button
+              >
             </div>
-            <TextAreaField placeholder="Value" rows={3} bind:value={env.value} on:input={_ => (scene = [...scene])} disabled={isRunning} />
+            <TextAreaField
+              placeholder="Value"
+              rows={3}
+              bind:value={env.value}
+              on:input={(_) => (scene = [...scene])}
+              disabled={isRunning}
+            />
           </div>
         {/each}
-        <button class="copy-button" onclick={() => { inspectorNode.envVars = inspectorNode.envVars || []; inspectorNode.envVars.push({ key: '', value: '' }); scene = [...scene]; }} disabled={isRunning}>Add Variable</button>
+        <button
+          class="copy-button"
+          onclick={() => {
+            inspectorNode.envVars = inspectorNode.envVars || [];
+            inspectorNode.envVars.push({ key: "", value: "" });
+            scene = [...scene];
+          }}
+          disabled={isRunning}>Add Variable</button
+        >
       {:else if inspectorNode.role === "output"}
         <h3>Output</h3>
         <span>Name: {inspectorNode.name}</span>
@@ -101,12 +172,21 @@
         <TextAreaField rows={20} bind:value={inspectorNode.outputText} />
       {:else}
         <label for="node-type">Type:</label>
-        <SelectField bind:value={inspectorNode.nodeType} {typeOptions} disabled={isRunning} />
+        <SelectField
+          bind:value={inspectorNode.nodeType}
+          options={typeOptions}
+          disabled={isRunning}
+        />
         <span>Available Variables:</span>
         {#if availableVariables && availableVariables.length > 0}
           <div class="available-variables">
             {#each availableVariables as varName}
-              <button class="variable-chip" onmouseenter={() => handleVarHover(varName, true)} onmouseleave={() => handleVarHover(varName, false)} onclick={() => handleVarClick(varName)}>
+              <button
+                class="variable-chip"
+                onmouseenter={() => handleVarHover(varName, true)}
+                onmouseleave={() => handleVarHover(varName, false)}
+                onclick={() => handleVarClick(varName)}
+              >
                 &#123;&#123;&#123;{varName}&#125;&#125;&#125;
               </button>
             {/each}
@@ -115,8 +195,13 @@
           <p class="hint">No variables available</p>
         {/if}
         {#if nodeAdapters[inspectorNode.nodeType]}
-          {@const SvelteComponent = nodeAdapters[inspectorNode.nodeType].component}
-          <SvelteComponent node={inspectorNode} {isRunning} on:scenechange={() => (scene = [...scene])} />
+          {@const SvelteComponent =
+            nodeAdapters[inspectorNode.nodeType].component}
+          <SvelteComponent
+            node={inspectorNode}
+            {isRunning}
+            on:scenechange={() => (scene = [...scene])}
+          />
         {:else}
           <p>No editor available for type "{inspectorNode.nodeType}"</p>
         {/if}
@@ -126,16 +211,31 @@
       <span>Title:</span>
       <div class="scene-static" style="margin-bottom: 12px;">{sceneName}</div>
       <span>Description:</span>
-      <div class="scene-static" style="white-space: pre-wrap;">{sceneDescription}</div>
+      <div class="scene-static" style="white-space: pre-wrap;">
+        {sceneDescription}
+      </div>
       <span>Instructions:</span>
-      <div class="scene-static" style="white-space: pre-wrap;">{sceneInstructions}</div>
+      <div class="scene-static" style="white-space: pre-wrap;">
+        {sceneInstructions}
+      </div>
       <span>Requirements:</span>
-      <div class="scene-static" style="white-space: pre-wrap;">{sceneRequirements}</div>
+      <div class="scene-static" style="white-space: pre-wrap;">
+        {sceneRequirements}
+      </div>
       <span>Compatibility:</span>
-      <div class="scene-static" style="white-space: pre-wrap;">{sceneCompatibility}</div>
+      <div class="scene-static" style="white-space: pre-wrap;">
+        {sceneCompatibility}
+      </div>
     {/if}
   </div>
-  <div class="resizer" onmousedown={handlePanelResizeMouseDown} role="separator" aria-orientation="vertical" aria-label="Resize info panel" tabindex="0"></div>
+  <div
+    class="resizer"
+    onmousedown={handlePanelResizeMouseDown}
+    role="separator"
+    aria-orientation="vertical"
+    aria-label="Resize info panel"
+    tabindex="0"
+  ></div>
 </div>
 
 <style>
@@ -224,7 +324,7 @@
     background-color: transparent;
   }
   .resizer:hover {
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0, 0, 0, 0.1);
   }
   .info-panel .env-row {
     margin-bottom: 16px;
